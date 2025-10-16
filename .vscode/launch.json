@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Create devices",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/create_devices.py",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Send telemetry",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/send_telemetry.py",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
