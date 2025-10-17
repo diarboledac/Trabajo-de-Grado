@@ -1,0 +1,20 @@
+{
+  "status": "idle",
+  "message": "Esperando que se ejecute run_telemetry.py.",
+  "timestamp": 1760742132.7136476,
+  "device_count": 0,
+  "interval_sec": 0.0,
+  "connected_devices": 0,
+  "disconnected_devices": 0,
+  "failed_devices": 0,
+  "failed_or_disconnected": 0,
+  "active_channels": 0,
+  "total_packets_sent": 0,
+  "total_packets_failed": 0,
+  "total_volume_mb": 0.0,
+  "avg_send_rate_per_device": 0.0,
+  "bandwidth_mbps": 0.0,
+  "collapse_time": null,
+  "failure_breakdown": {},
+  "devices": []
+}

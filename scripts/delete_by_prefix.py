@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Remove ThingsBoard devices that exceed the configured limit for a given prefix."""
+"""Remove all ThingsBoard devices that match the configured prefix."""
 from __future__ import annotations
 
 import os
 import re
 import sys
-from typing import Iterable
 
 from dotenv import load_dotenv
 
@@ -14,7 +13,6 @@ from tb import TB, TBError
 load_dotenv(override=True)
 
 PREFIX = os.getenv("DEVICE_PREFIX", "sim")
-KEEP_LIMIT = int(os.getenv("KEEP_DEVICE_COUNT", os.getenv("DEVICE_COUNT", "500")))
 
 
 def ensure_credentials() -> tuple[str, str, str]:
@@ -54,40 +52,29 @@ def extract_index(name: str, pattern: re.Pattern[str]) -> tuple[int, str]:
     return (10_000_000, name)
 
 
-def delete_devices(api: TB, devices: Iterable[dict]) -> int:
-    deleted = 0
-    for dev in devices:
-        dev_id = dev["id"]["id"]
-        name = dev.get("name", dev_id)
-        try:
-            api.delete_device(dev_id)
-            print(f"[DEL] {name}")
-            deleted += 1
-        except TBError as exc:
-            print(f"[WARN] No se pudo borrar {name}: {exc}")
-    return deleted
-
-
 def main() -> None:
     url, user, password = ensure_credentials()
-    limit = max(0, KEEP_LIMIT)
 
     with TB(url, user, password) as api:
         api.login()
         devices = fetch_devices(api, PREFIX)
         total = len(devices)
-        if total <= limit:
-            print(f"[INFO] {total} dispositivos con prefijo '{PREFIX}' (limite {limit}). No se elimina nada.")
+        if total == 0:
+            print(f"[INFO] No se encontraron dispositivos con prefijo '{PREFIX}'.")
             return
 
-        survivors = devices[:limit]
-        candidates = devices[limit:]
-        print(
-            f"[INFO] Detectados {total} dispositivos con prefijo '{PREFIX}'. "
-            f"Se conservaran {len(survivors)} y se eliminaran {len(candidates)}."
-        )
-        deleted = delete_devices(api, candidates)
-        print(f"[OK] Limpieza completada. Eliminados: {deleted}. Conservados: {len(survivors)}.")
+        print(f"[INFO] Detectados {total} dispositivos con prefijo '{PREFIX}'. Se eliminaran todos.")
+        deleted = 0
+        for dev in devices:
+            dev_id = dev["id"]["id"]
+            name = dev.get("name", dev_id)
+            try:
+                api.delete_device(dev_id)
+                print(f"[DEL] {name}")
+                deleted += 1
+            except TBError as exc:
+                print(f"[WARN] No se pudo borrar {name}: {exc}")
+        print(f"[OK] Limpieza completada. Eliminados: {deleted}.")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # ThingsBoard Telemetry Stress Kit
 
-This project provisions up to **500** simulated devices in ThingsBoard, drives MQTT telemetry in synchronized bursts to stress the server, and exposes a detailed dashboard highlighting throughput, bandwidth and failure causes in real time.
+This toolkit keeps a ThingsBoard tenant populated with up to **500** simulated devices, generates synchronized MQTT bursts to stress the server, and visualises the resulting metrics in an independent dashboard. Each phase—provisioning, telemetry, and dashboard—runs with its own command so you can stop telemetry while the dashboard remains available.
 
 ---
 
@@ -9,45 +9,45 @@ This project provisions up to **500** simulated devices in ThingsBoard, drives M
 1. [Requirements](#requirements)  
 2. [Environment](#environment)  
 3. [Installation](#installation)  
-4. [Running the simulation](#running-the-simulation)  
-5. [Live metrics and dashboard](#live-metrics-and-dashboard)  
-6. [Cleaning up devices](#cleaning-up-devices)  
-7. [Connectivity check](#connectivity-check)  
-8. [Troubleshooting](#troubleshooting)
+4. [Quick commands](#quick-commands)  
+5. [Typical workflow](#typical-workflow)  
+6. [Live metrics and dashboard](#live-metrics-and-dashboard)  
+7. [Cleaning up devices](#cleaning-up-devices)  
+8. [Connectivity check](#connectivity-check)  
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Requirements
 
-- Python 3.9+ (virtual environment recommended).  
+- Python 3.9+ (create a virtual environment if possible).  
 - ThingsBoard tenant credentials (`TB_URL`, `TB_USERNAME`, `TB_PASSWORD`).  
-- MQTT endpoint reachability (`MQTT_HOST`, `MQTT_PORT`, optional TLS).  
-- Docker is optional if you prefer containerised execution.
+- MQTT broker reachable at `MQTT_HOST:MQTT_PORT` (TLS optional).  
+- Docker is optional if you prefer to containerise the workflow.
 
 ---
 
 ## Environment
 
-Populate `.env` with your tenant and broker details. The simulation constrains the fleet to 500 devices to focus on high-load experiments.
+Configure `.env` with the tenant, MQTT, and simulator details. The system caps the fleet at 500 devices so you can focus on high-load scenarios without overwhelming the tenant.
 
 | Variable | Description |
 |----------|-------------|
 | `TB_URL` | Base REST URL for ThingsBoard (no trailing slash). |
 | `TB_USERNAME`, `TB_PASSWORD` | Tenant credentials. |
 | `TB_TIMEOUT` | REST timeout (seconds, default 60). |
-| `DEVICE_PREFIX` | Base name for simulated devices (default `sim`). |
-| `DEVICE_COUNT` | Number of devices to provision/stream (0 < count ≤ 500). |
-| `KEEP_DEVICE_COUNT` | Optional override for the cleanup script (defaults to `DEVICE_COUNT`). |
+| `DEVICE_PREFIX` | Name prefix for simulated devices (default `sim`). |
+| `DEVICE_COUNT` | Devices to provision/stream (1 ≤ count ≤ 500). |
 | `DEVICE_LABEL`, `DEVICE_TYPE` | Metadata applied to each device. |
-| `DEVICE_PROFILE_ID` | Optional profile id; falls back to the tenant default. |
-| `MQTT_HOST`, `MQTT_PORT`, `MQTT_TLS` | MQTT connection settings. |
-| `PUBLISH_INTERVAL_SEC` | Interval between bursts per device. All threads share the exact cadence. |
-| `SIM_START_LEAD_TIME` | Lead time (seconds) before the first synchronized burst (default 0.3). |
-| `DASHBOARD_HOST`, `DASHBOARD_PORT` | Flask dashboard bind address (default `0.0.0.0:5000`). |
+| `DEVICE_PROFILE_ID` | Optional profile id; falls back to ThingsBoard default. |
+| `MQTT_HOST`, `MQTT_PORT`, `MQTT_TLS` | MQTT connection parameters. |
+| `PUBLISH_INTERVAL_SEC` | Interval between bursts per device (seconds). |
+| `SIM_START_LEAD_TIME` | Lead time before the first synchronized burst (seconds). |
+| `DASHBOARD_HOST`, `DASHBOARD_PORT` | Bind address for the dashboard (defaults to `0.0.0.0:5000`). |
 | `DASHBOARD_REFRESH_MS` | Dashboard polling interval (milliseconds). |
-| `PROVISION_RETRIES`, `PROVISION_RETRY_DELAY` | Backoff parameters for device provisioning. |
+| `PROVISION_RETRIES`, `PROVISION_RETRY_DELAY` | Backoff parameters when creating devices. |
 
-> Update `.env` and rerun the simulator whenever you adjust credentials, the device cap, or MQTT parameters.
+Update `.env` whenever you change credentials, the device cap, or MQTT details, then rerun the relevant command.
 
 ---
 
@@ -69,78 +69,111 @@ pip install -r requirements.txt
 
 ---
 
-## Running the simulation
+## Quick commands
 
-1. **Configure** `.env` with the desired device count (≤ 500) and broker/TB credentials.  
-2. **Launch** the simulator from an activated virtual environment:
-   ```powershell
-   .\.venv\Scripts\python.exe scripts/create_and_stream.py
+| Action | Command (from repo root, after activating the venv) |
+|--------|-----------------------------------------------------|
+| **Crear/actualizar dispositivos** | `python scripts/provision_devices.py` |
+| **Levantar dashboard de métricas** | `python scripts/run_dashboard.py` |
+| **Iniciar envío de telemetría** | `python scripts/run_telemetry.py` |
+| **Detener envío de telemetría** | `python scripts/stop_telemetry.py` (o `Ctrl+C` en la consola donde corre `run_telemetry.py`) |
+| **Borrar dispositivos del ThingsBoard** | `python scripts/delete_by_prefix.py` |
+| **Verificar conectividad rápida** | `python scripts/check_connectivity.py` |
+
+All scripts respect the 500-device ceiling automatically.
+
+---
+
+## Typical workflow
+
+1. **Provision devices**  
    ```
-   The script will:
-   - Provision or reuse `DEVICE_COUNT` devices (tokens saved to `data/tokens.json`).
-   - Start one MQTT client thread per device.
-   - Synchronize every send operation so that all devices publish at the exact same time slice.
-   - Start a Flask dashboard at `http://<DASHBOARD_HOST>:<DASHBOARD_PORT>`.
-   - Emit `[METRICS]` lines every five seconds summarizing health and throughput.
-3. **Stop** with `Ctrl+C`. The simulator shuts down the dashboard, waits for all worker threads, and prints a final report.
+   python scripts/provision_devices.py
+   ```  
+   Stores tokens in `data/tokens.json` and exports metadata to `data/devices.csv`. The metrics file (`data/metrics.json`) is reset to an idle state so the dashboard shows a friendly message until telemetry starts.
 
-Whenever you change the profile or device count, simply edit `.env` and run the script again. Devices are reused where possible; missing ones are created automatically.
+2. **Start the dashboard** (optional but recommended before load tests)  
+   ```
+   python scripts/run_dashboard.py
+   ```  
+   Visit `http://<DASHBOARD_HOST>:<DASHBOARD_PORT>` to observe live metrics. The dashboard keeps working even if telemetry stops later.
+
+3. **Kick off telemetry**  
+   ```
+   python scripts/run_telemetry.py
+   ```  
+   The command launches one MQTT worker per token, synchronises all bursts using a barrier, and writes continuous snapshots to `data/metrics.json`. Console output shows connection issues and aggregate metrics.
+
+4. **Stop telemetry when needed**  
+   - Press `Ctrl+C` in the telemetry console, **or**  
+   - Run `python scripts/stop_telemetry.py` from a different shell (creates `data/stop.flag`, detected by the simulator).  
+   Either option keeps the latest metrics available to the dashboard.
+
+5. **Tear down devices (optional)**  
+   ```
+   python scripts/delete_by_prefix.py
+   ```  
+   Deletes every device whose name begins with `DEVICE_PREFIX`, giving you a clean slate for future tests.
 
 ---
 
 ## Live metrics and dashboard
 
-`scripts/create_and_stream.py` exposes `/metrics` for the dashboard and logs. The collector keeps track of:
+`run_telemetry.py` feeds the collector that tracks:
 
-- Connected, disconnected and failed device counts.  
-- Total packets sent/failed, average rate per device, and total data volume (MB).  
-- Estimated bandwidth usage (Mbps) and number of active MQTT channels.  
-- Time-to-collapse (seconds until the last device disconnects while the run is active).  
-- Detailed failure breakdowns (authentication, network, TLS, payload, memory, etc.) including stage and MQTT codes.
+- Connected, disconnected, and failed device counts.  
+- Total packets sent/failed, average send rate per device, and cumulative data volume (MB).  
+- Estimated bandwidth (Mbps), number of active MQTT channels, and collapse time (seconds until the last disconnection).  
+- Detailed failure buckets (authentication, network, TLS, payload, memory, etc.) with the stage that triggered them.
 
-The dashboard (Chart.js + HTML) displays:
+`run_dashboard.py` reads `data/metrics.json` on every refresh—there is no in-memory coupling with the telemetry process—so you can keep the dashboard running while telemetry is offline. The UI includes:
 
-- A timeline of connected vs failed/disconnected devices.  
-- Metric tiles with throughput, bandwidth, collapse timers and burst interval.  
-- A failure table aggregating root causes.  
-- A device health table (top 40 problematic devices) including last telemetry timestamp, failure reason, and stage.
-
-All telemetry threads share a lead time (`SIM_START_LEAD_TIME`) and deterministic cadence, guaranteeing simultaneous bursts and consistent server pressure.
+- Status banner with the current simulator state (idle, running, stopping, stopped).  
+- Timeline chart for connected vs failed/disconnected devices.  
+- Metric tiles for throughput, bandwidth, collapse timer, and burst interval.  
+- Failure table (sorted by frequency).  
+- Device health table (up to 40 recent incidents) highlighting the last telemetry timestamp, failure reason, and stage.
 
 ---
 
 ## Cleaning up devices
 
-To trim devices beyond the configured cap without touching the healthy fleet, run:
+To wipe all simulated devices from the tenant:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts/delete_by_prefix.py
+python scripts/delete_by_prefix.py
 ```
 
-The script keeps the first `KEEP_DEVICE_COUNT` (defaults to `DEVICE_COUNT`) devices matching `DEVICE_PREFIX` and deletes the rest. Use this after testing to reset the tenant to the 500-device baseline.
+Every device starting with `DEVICE_PREFIX` is deleted—there is no retention threshold—so you always return to an empty slate. Use this after stress tests or before tweaking prefixes/counts in `.env`.
 
-`data/tokens.json` and `data/devices.csv` ship empty; they are repopulated on each simulator run.
+`data/tokens.json`, `data/devices.csv`, and `data/metrics.json` remain local so you can reprovision on demand.
 
 ---
 
 ## Connectivity check
 
-Use `scripts/check_connectivity.py` for a quick ThingsBoard sanity check:
+For a quick sanity check against the ThingsBoard API:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts/check_connectivity.py
+python scripts/check_connectivity.py
 ```
 
-It validates the login credentials and confirms the REST API is reachable.
+The script logs in using `.env` credentials and performs a simple device query to confirm REST access before you run heavier operations.
 
 ---
 
 ## Troubleshooting
 
-- **MQTT connection errors (`rc != 0`)**: check broker availability, credentials, or TLS settings. The dashboard will classify the error (auth, network, payload, etc.).  
-- **Provisioning backoff exhausted**: increase `PROVISION_RETRIES` or `PROVISION_RETRY_DELAY` if ThingsBoard throttles requests.  
-- **Dashboard unreachable**: verify the port is open or adjust `DASHBOARD_PORT`. You can always hit `/metrics` directly.  
-- **Collapse timer triggers early**: inspect the failure table to see which stage (connect, publish, disconnect) is responsible and adjust broker/server tuning accordingly.  
-- **Need to restart cleanly**: stop the simulation with `Ctrl+C`, run `scripts/delete_by_prefix.py` to trim excess devices, then start again.
+- **Errores de conexión MQTT (`rc != 0`)**  
+  Revisa credenciales de broker, TLS y reachability. El dashboard clasifica las causas y muestra la etapa (connect/publish/disconnect).
 
-With these tools you can generate synchronized load, observe bandwidth and failure causes in real time, and iterate on server hardening with a consistent 500-device fleet.
+- **Excepciones al provisionar**  
+  Ajusta `PROVISION_RETRIES` y `PROVISION_RETRY_DELAY` si ThingsBoard está saturado. El proceso reintenta automáticamente hasta 5 veces por dispositivo.
+
+- **Dashboard sin datos**  
+  Abre `http://<host>:<port>/metrics` para ver el JSON bruto. Si `metrics.json` está corrupto, vuelve a ejecutar `run_telemetry.py` o `provision_devices.py` (este último lo reinicia con estado `idle`).
+
+- **Necesitas reiniciar limpio**  
+  Ejecuta `stop_telemetry.py`, espera a que el comando de telemetría finalice, lanza `delete_by_prefix.py`, ajusta `.env` si es necesario y repite el flujo desde `provision_devices.py`.
+
+Con estos comandos puedes generar tráfico sincronizado, inspeccionar métricas en tiempo real incluso después de detener la telemetría, y mantener el tenant bajo control durante las pruebas de carga.
