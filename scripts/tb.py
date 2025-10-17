@@ -5,9 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+import os
 import requests
 
-TIMEOUT = 15
+TIMEOUT = int(os.getenv("TB_TIMEOUT", "15"))
 
 
 class TBError(RuntimeError):
@@ -131,6 +132,14 @@ class TB:
             print(f"[WARN] No se guardaron attrs para {device_id}: {resp.status_code} {resp.text}")
             return False
         return True
+
+    def delete_device(self, device_id: str) -> None:
+        resp = self.session.delete(
+            f"{self.base}/api/device/{device_id}",
+            timeout=self.timeout,
+        )
+        if resp.status_code not in (200, 202, 204):
+            raise TBError(f"No se pudo eliminar dispositivo {device_id}: {resp.status_code} {resp.text}")
 
 
 __all__ = ["TB", "TBError"]
