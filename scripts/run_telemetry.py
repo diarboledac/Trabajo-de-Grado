@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Launch MQTT telemetry using previously provisioned devices."""
+"""Launch MQTT telemetry using previously provisioned devices (starts dashboard too)."""
 from __future__ import annotations
 
 import threading
 import time
 
+from run_dashboard import DashboardServer, start_dashboard_server
 from simcore import (
     MAX_DEVICES,
     METRICS_FILE,
@@ -13,6 +14,7 @@ from simcore import (
     StartCoordinator,
     StopSignal,
     MetricsCollector,
+    MetricsReporter,
     MetricsWriter,
     SimLoop,
     ensure_data_dir,
@@ -50,6 +52,21 @@ def main() -> None:
     for name, _ in device_items:
         metrics.register_device(name)
 
+    dashboard_server: DashboardServer | None = None
+    reporter: MetricsReporter | None = None
+    try:
+        dashboard_server = start_dashboard_server(
+            config.dashboard_host,
+            config.dashboard_port,
+            config.dashboard_refresh_ms,
+        )
+        print(f"[INFO] Dashboard integrado disponible en {dashboard_server.address}.")
+    except OSError as exc:
+        print(f"[WARN] No se pudo iniciar el dashboard integrado: {exc}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[WARN] Error iniciando el dashboard integrado: {exc}")
+        dashboard_server = None
+
     running_event = threading.Event()
 
     def status_getter() -> str:
@@ -70,6 +87,9 @@ def main() -> None:
     writer.write_snapshot()
     writer.start()
 
+    reporter = MetricsReporter(metrics, interval=5.0)
+    reporter.start()
+
     workers: list[SimLoop] = []
     for name, token in device_items:
         worker = SimLoop(
@@ -88,7 +108,7 @@ def main() -> None:
         start_index = barrier.wait()
         running_event.set()
         if start_index == 0:
-            target_ts = coordinator.release()
+            coordinator.release()
             wall_time = time.strftime(
                 "%Y-%m-%d %H:%M:%S",
                 time.localtime(time.time() + config.start_lead_time),
@@ -120,6 +140,13 @@ def main() -> None:
             worker.join(timeout=2)
         writer.stop(final_status="stopped", extra={"message": "Telemetria detenida"})
         stop_signal.clear_flag()
+        if reporter is not None and reporter.is_alive():
+            reporter.stop()
+            reporter.join(timeout=2)
+        if dashboard_server is not None and dashboard_server.is_alive():
+            dashboard_server.shutdown()
+            dashboard_server.join(timeout=2)
+            print("[INFO] Dashboard integrado detenido.")
         snapshot = metrics.snapshot()
         print("[OK] Telemetria detenida.")
         print("[METRICS] Resumen final:")
@@ -131,7 +158,7 @@ def main() -> None:
         print(f"  Paquetes fallidos: {snapshot.total_packets_failed}")
         print(f"  Volumen total: {snapshot.total_volume_mb:.3f} MB")
         print(f"  Ancho de banda: {snapshot.bandwidth_mbps:.3f} Mbps")
-        print(f"  Archivo de métricas: {METRICS_FILE}")
+        print(f"  Archivo de metricas: {METRICS_FILE}")
 
 
 if __name__ == "__main__":

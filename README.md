@@ -160,10 +160,10 @@ Deactivate the virtual environment with `deactivate` (bash) or `Deactivate` (Pow
 | Script | Purpose | When to Use |
 |--------|---------|-------------|
 | `scripts/check_connectivity.py` | Confirms ThingsBoard REST login and device listing. | First-time configuration or troubleshooting credential issues. |
-| `scripts/provision_devices.py` | Creates or reuses `DEVICE_COUNT` devices, stores tokens, exports CSV, resets metrics file to “idle”. | Before the first telemetry run or whenever you need a fresh fleet. |
-| `scripts/run_telemetry.py` | Spawns worker threads, synchronizes bursts, writes live metrics (`data/metrics.json`), respects stop flag. | Start load generation after provisioning. |
+| `scripts/provision_devices.py` | Creates or reuses `DEVICE_COUNT` devices, stores tokens, exports CSV, resets metrics file to "idle". | Before the first telemetry run or whenever you need a fresh fleet. |
+| `scripts/run_telemetry.py` | Spawns worker threads, synchronizes bursts, writes live metrics (`data/metrics.json`), obeys the stop flag, and auto-starts the dashboard server. | Start load generation after provisioning (dashboard comes up automatically). |
 | `scripts/stop_telemetry.py` | Writes `data/stop.flag` to instruct the telemetry process to stop gracefully. | Remote/automated shutdown of telemetry without killing the process. |
-| `scripts/run_dashboard.py` | Serves a Flask dashboard powered by `data/metrics.json`. Remains useful even when telemetry is idle. | Continuous monitoring or post-run analysis. |
+| `scripts/run_dashboard.py` | Standalone dashboard server (also reused internally by `run_telemetry.py`). | Launch manually when you only need to visualise metrics without generating traffic. |
 | `scripts/delete_by_prefix.py` | Deletes all ThingsBoard devices beginning with `DEVICE_PREFIX`. | Cleanup step after tests or before reconfiguring `.env`. |
 
 All scripts assume `.env` is located at the repository root and contain the necessary credentials and settings.
@@ -184,15 +184,16 @@ All scripts assume `.env` is located at the repository root and contain the nece
 
 ### 8.2 Running a Load Test
 
-1. Start the dashboard (optional but recommended):  
+1. (Optional) Start the dashboard ahead of time if you want to browse historical metrics before generating traffic:  
    `python scripts/run_dashboard.py`  
-   Leave this running in a dedicated terminal.
+   This is no longer required for load tests because the telemetry command boots the dashboard automatically.
 
-2. Launch telemetry:  
+2. Launch telemetry (this also starts the embedded dashboard if it is not already running):  
    `python scripts/run_telemetry.py`  
-   - Wait for the “[INFO] Telemetria sincronizada lista” message.
+   - Wait for the `[INFO] Telemetria sincronizada lista` message.
    - Monitor `[METRICS]` logs for high-level stats (connections, bandwidth, failure causes).
    - Visit the dashboard URL to inspect charts, failure breakdown, per-device status.
+
 
 3. Stop telemetry when finished:  
    - If you're in the telemetry terminal, press `Ctrl+C`, **or**  
@@ -294,8 +295,8 @@ python scripts/check_connectivity.py
 # 4. Provision fleet (max 500 devices)
 python scripts/provision_devices.py
 
-# 5. Dashboard (optional, can run anytime)
-python scripts/run_dashboard.py
+# 5. (Optional) Dashboard solo
+python scripts/run_dashboard.py  # run_telemetry.py lo inicia automaticamente si no esta activo
 
 # 6. Start telemetry load
 python scripts/run_telemetry.py

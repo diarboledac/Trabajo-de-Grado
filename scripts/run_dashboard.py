@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Serve the telemetry metrics dashboard as an independent process."""
+"""Serve the telemetry metrics dashboard as a standalone or background server."""
 from __future__ import annotations
 
 import json
-from pathlib import Path
+import threading
 from typing import Any, Dict
 
 from flask import Flask, jsonify, render_template_string
+from werkzeug.serving import make_server
 
 from simcore import METRICS_FILE, SimulatorConfig, ensure_data_dir
 
@@ -68,13 +69,13 @@ DASHBOARD_TEMPLATE = """
         <span id="status-pill" class="pill idle">idle</span>
         <span class="muted" id="status-message">Sin datos disponibles.</span>
       </p>
-      <p class="muted">Última actualización: <span id="last-update">n/a</span></p>
+      <p class="muted">Ultima actualizacion: <span id="last-update">n/a</span></p>
     </section>
     <section class="card">
       <canvas id="connectedChart" height="120"></canvas>
     </section>
     <section class="card">
-      <h2>Métricas actuales</h2>
+      <h2>Metricas actuales</h2>
       <div class="grid">
         <div class="metric"><h3>Dispositivos solicitados</h3><span id="requested_devices">0</span></div>
         <div class="metric"><h3>Conectados</h3><span id="connected_devices">0</span></div>
@@ -102,7 +103,7 @@ DASHBOARD_TEMPLATE = """
         </thead>
         <tbody id="failure_table"></tbody>
       </table>
-      <p class="table-note">Agrupación de errores de MQTT, red y servidor detectados durante la ejecución.</p>
+      <p class="table-note">Agrupacion de errores de MQTT, red y servidor detectados durante la ejecucion.</p>
     </section>
     <section class="card">
       <h2>Dispositivos con incidencias</h2>
@@ -112,8 +113,8 @@ DASHBOARD_TEMPLATE = """
             <th>Dispositivo</th>
             <th>Estado</th>
             <th>Etapa</th>
-            <th>Última telemetría</th>
-            <th>Último fallo</th>
+            <th>Ultima telemetria</th>
+            <th>Ultimo fallo</th>
             <th>Causa</th>
             <th>Detalle</th>
           </tr>
@@ -241,7 +242,7 @@ DASHBOARD_TEMPLATE = """
       try {
         const response = await fetch('/metrics');
         if (!response.ok) {
-          throw new Error('No se pudo obtener métricas');
+          throw new Error('No se pudo obtener metricas');
         }
         const snapshot = await response.json();
         updateStatus(snapshot.status || 'idle', snapshot.message || '', snapshot.timestamp);
@@ -250,7 +251,7 @@ DASHBOARD_TEMPLATE = """
         updateFailureTable(snapshot);
         updateDeviceTable(snapshot);
       } catch (error) {
-        console.error('Error actualizando métricas:', error);
+        console.error('Error actualizando metricas:', error);
       }
     }
 
@@ -267,7 +268,7 @@ def load_metrics() -> Dict[str, Any]:
     if not METRICS_FILE.exists():
         return {
             "status": "idle",
-            "message": "Sin datos: ejecuta run_telemetry.py para generar métricas.",
+            "message": "Sin datos: ejecuta run_telemetry.py para generar metricas.",
             "timestamp": None,
             "device_count": 0,
             "interval_sec": 0.0,
@@ -330,15 +331,51 @@ def create_app(refresh_ms: int) -> Flask:
     return app
 
 
+class DashboardServer(threading.Thread):
+    """Run the Flask dashboard in a background WSGI server."""
+
+    def __init__(self, app: Flask, host: str, port: int) -> None:
+        super().__init__(daemon=True)
+        self._host = host
+        self._port = port
+        self._server = make_server(host, port, app)
+        self._context = app.app_context()
+        self._context.push()
+
+    @property
+    def address(self) -> str:
+        return f"http://{self._host}:{self._port}"
+
+    def run(self) -> None:
+        self._server.serve_forever()
+
+    def shutdown(self) -> None:
+        self._server.shutdown()
+        try:
+            self._context.pop()
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def start_dashboard_server(host: str, port: int, refresh_ms: int) -> DashboardServer:
+    app = create_app(refresh_ms=max(500, refresh_ms))
+    server = DashboardServer(app, host, port)
+    server.start()
+    return server
+
+
 def main() -> None:
     config = SimulatorConfig.load()
-    refresh_ms = max(500, config.dashboard_refresh_ms)
-    app = create_app(refresh_ms=refresh_ms)
-    print(
-        f"[INFO] Dashboard disponible en http://{config.dashboard_host}:{config.dashboard_port} "
-        "(Ctrl+C para detener)."
-    )
-    app.run(host=config.dashboard_host, port=config.dashboard_port, use_reloader=False)
+    server: DashboardServer | None = None
+    try:
+        server = start_dashboard_server(config.dashboard_host, config.dashboard_port, config.dashboard_refresh_ms)
+        print(f"[INFO] Dashboard disponible en {server.address} (Ctrl+C para detener).")
+        server.join()
+    except KeyboardInterrupt:
+        print("\n[INFO] Deteniendo dashboard...")
+    finally:
+        if server is not None:
+            server.shutdown()
 
 
 if __name__ == "__main__":

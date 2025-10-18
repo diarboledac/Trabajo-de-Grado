@@ -1,14 +1,13 @@
 {
-  "status": "idle",
-  "message": "Esperando que se ejecute run_telemetry.py.",
-  "timestamp": 1760742132.7136476,
-  "device_count": 0,
-  "interval_sec": 0.0,
-  "connected_devices": 0,
+  "status": "running",
+  "timestamp": 1760749194.6676264,
+  "device_count": 10,
+  "interval_sec": 5.0,
+  "connected_devices": 10,
   "disconnected_devices": 0,
   "failed_devices": 0,
   "failed_or_disconnected": 0,
-  "active_channels": 0,
+  "active_channels": 10,
   "total_packets_sent": 0,
   "total_packets_failed": 0,
   "total_volume_mb": 0.0,
@@ -16,5 +15,107 @@
   "bandwidth_mbps": 0.0,
   "collapse_time": null,
   "failure_breakdown": {},
-  "devices": []
+  "devices": [
+    {
+      "name": "sim-001",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    },
+    {
+      "name": "sim-002",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    },
+    {
+      "name": "sim-003",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    },
+    {
+      "name": "sim-004",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    },
+    {
+      "name": "sim-005",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    },
+    {
+      "name": "sim-006",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    },
+    {
+      "name": "sim-007",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    },
+    {
+      "name": "sim-008",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    },
+    {
+      "name": "sim-009",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    },
+    {
+      "name": "sim-010",
+      "status": "connected",
+      "last_stage": "connect",
+      "last_seen": null,
+      "last_failure": null,
+      "failure_reason": null,
+      "failure_detail": null,
+      "disconnect_code": 0
+    }
+  ],
+  "message": "Telemetria en ejecucion"
 }

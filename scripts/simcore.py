@@ -373,6 +373,44 @@ class MetricsCollector:
         )
 
 
+class MetricsReporter(threading.Thread):
+    """Periodic logger that prints aggregate metrics during the simulation."""
+
+    def __init__(self, collector: MetricsCollector, interval: float = 5.0) -> None:
+        super().__init__(daemon=True)
+        self._collector = collector
+        self._interval = interval
+        self._stop_event = threading.Event()
+
+    def run(self) -> None:
+        while not self._stop_event.wait(self._interval):
+            snap = self._collector.snapshot()
+            breakdown = ", ".join(
+                f"{reason}:{count}"
+                for reason, count in sorted(
+                    snap.failure_breakdown.items(), key=lambda item: item[1], reverse=True
+                )[:4]
+            )
+            if not breakdown:
+                breakdown = "none"
+            print(
+                "[METRICS] "
+                f"connected={snap.connected_devices} "
+                f"disconnected={snap.disconnected_devices} "
+                f"failed={snap.failed_devices} "
+                f"sent={snap.total_packets_sent} "
+                f"failed_packets={snap.total_packets_failed} "
+                f"volume_mb={snap.total_volume_mb:.3f} "
+                f"bandwidth_mbps={snap.bandwidth_mbps:.3f} "
+                f"avg_rate={snap.avg_send_rate_per_device:.3f}/s "
+                f"collapse={'{:.2f}s'.format(snap.collapse_time) if snap.collapse_time is not None else 'n/a'} "
+                f"top_causes={breakdown}"
+            )
+
+    def stop(self) -> None:
+        self._stop_event.set()
+
+
 class MetricsWriter(threading.Thread):
     """Persist metrics snapshots to disk so the dashboard can read them independently."""
 
@@ -629,6 +667,7 @@ __all__ = [
     "DeviceStatusSnapshot",
     "MetricsSnapshot",
     "MetricsCollector",
+    "MetricsReporter",
     "MetricsWriter",
     "StopSignal",
     "StartCoordinator",
