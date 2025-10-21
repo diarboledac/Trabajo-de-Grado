@@ -1,23 +1,34 @@
 #!/usr/bin/env python3
-"""Provision ThingsBoard devices and export their tokens."""
+"""Create (or reuse) ThingsBoard devices and dump their tokens."""
 from __future__ import annotations
 
 import csv
 import json
+import os
 import sys
 import time
+from pathlib import Path
 
-from simcore import (
-    DATA_DIR,
-    MAX_DEVICES,
-    TOKENS_FILE,
-    SimulatorConfig,
-    ensure_data_dir,
-    write_idle_metrics,
-)
+from dotenv import load_dotenv
+
 from tb import TB, TBError
 
-CSV_FILE = DATA_DIR / "devices.csv"
+load_dotenv(override=True)
+
+ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = ROOT / "data"
+PROVISION_DIR = DATA_DIR / "provisioning"
+TOKENS_FILE = PROVISION_DIR / "tokens.json"
+CSV_FILE = PROVISION_DIR / "devices.csv"
+
+TB_URL = os.getenv("TB_URL", "").rstrip("/")
+TB_USERNAME = os.getenv("TB_USERNAME")
+TB_PASSWORD = os.getenv("TB_PASSWORD")
+DEVICE_PREFIX = os.getenv("DEVICE_PREFIX", "sim")
+DEVICE_COUNT = int(os.getenv("DEVICE_COUNT", "100"))
+DEVICE_LABEL = os.getenv("DEVICE_LABEL", "sim-lab")
+DEVICE_TYPE = os.getenv("DEVICE_TYPE", "sensor")
+PROFILE_ID = os.getenv("DEVICE_PROFILE_ID")
 
 
 def fail(msg: str, code: int = 1) -> None:
@@ -25,33 +36,37 @@ def fail(msg: str, code: int = 1) -> None:
     raise SystemExit(code)
 
 
+def ensure_dir(path: Path) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+
+
 def main() -> None:
-    config = SimulatorConfig.load()
-    if not config.tb_url or not config.tb_username or not config.tb_password:
+    if not TB_URL or not TB_USERNAME or not TB_PASSWORD:
         fail("Config .env incompleta (TB_URL, TB_USERNAME, TB_PASSWORD)")
 
-    ensure_data_dir()
+    ensure_dir(PROVISION_DIR)
+
     tokens_map: dict[str, str] = {}
     rows: list[list[str]] = []
     started = time.time()
 
     try:
-        with TB(config.tb_url, config.tb_username, config.tb_password) as api:
+        with TB(TB_URL, TB_USERNAME, TB_PASSWORD) as api:
             api.login()
-            profile_id = config.device_profile_id or api.default_profile()
+            profile_id = PROFILE_ID or api.default_profile()
             if profile_id:
-                msg = "fijado" if config.device_profile_id else "por defecto"
+                msg = "fijado" if PROFILE_ID else "por defecto"
                 print(f"[INFO] Device Profile {msg}: {profile_id}")
             else:
-                print("[INFO] No se encontro Device Profile por defecto")
+                print("[INFO] No se encontró Device Profile por defecto")
 
-            for idx in range(1, config.device_count + 1):
-                name = f"{config.device_prefix}-{idx:03d}"
+            for idx in range(1, DEVICE_COUNT + 1):
+                name = f"{DEVICE_PREFIX}-{idx:03d}"
                 print(f"[INFO] Creando/recuperando '{name}'...")
                 device = api.save_device(
                     name,
-                    label=config.device_label,
-                    dev_type=config.device_type,
+                    label=DEVICE_LABEL,
+                    dev_type=DEVICE_TYPE,
                     profile_id=profile_id,
                 )
                 dev_id = device["id"]["id"]
@@ -62,10 +77,11 @@ def main() -> None:
                     dev_id,
                     {
                         "batch": "sim-" + time.strftime("%Y%m%d"),
-                        "group": config.device_prefix,
+                        "group": DEVICE_PREFIX,
                         "index": idx,
                     },
                 )
+
     except TBError as exc:
         fail(str(exc))
 
@@ -76,9 +92,9 @@ def main() -> None:
         writer.writerows(rows)
 
     elapsed = time.time() - started
-    print(f"[OK] {len(rows)} dispositivos listos (maximo {MAX_DEVICES}). Tokens en: {TOKENS_FILE}")
-    print(f"[OK] CSV exportado en: {CSV_FILE}. Tiempo total: {elapsed:.1f}s")
-    write_idle_metrics("Dispositivos provisionados. Ejecuta run_telemetry.py para iniciar el trafico.")
+    print(
+        f"[OK] {len(rows)} dispositivos. Tokens en: {TOKENS_FILE}. CSV en: {CSV_FILE}. Tiempo: {elapsed:.1f}s"
+    )
 
 
 if __name__ == "__main__":

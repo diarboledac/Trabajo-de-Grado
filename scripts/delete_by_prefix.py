@@ -1,85 +1,59 @@
 #!/usr/bin/env python3
-"""Remove all ThingsBoard devices that match the configured prefix."""
+"""Delete ThingsBoard devices by prefix."""
 from __future__ import annotations
 
 import os
-import re
 import sys
 
+import requests
 from dotenv import load_dotenv
-
-from tb import TB, TBError
 
 load_dotenv(override=True)
 
-PREFIX = os.getenv("DEVICE_PREFIX", "sim")
+TB_URL = os.getenv('TB_URL', '').rstrip('/')
+TB_USERNAME = os.getenv('TB_USERNAME')
+TB_PASSWORD = os.getenv('TB_PASSWORD')
+PREFIX = os.getenv('DEVICE_PREFIX', 'sim')
 
+if not TB_URL or not TB_USERNAME or not TB_PASSWORD:
+    print('[ERR] Faltan TB_URL/TB_USERNAME/TB_PASSWORD en el entorno', file=sys.stderr)
+    raise SystemExit(1)
 
-def ensure_credentials() -> tuple[str, str, str]:
-    url = os.getenv("TB_URL", "").rstrip("/")
-    user = os.getenv("TB_USERNAME")
-    password = os.getenv("TB_PASSWORD")
-    if not url or not user or not password:
-        print("[ERR] Faltan TB_URL/TB_USERNAME/TB_PASSWORD en el entorno", file=sys.stderr)
-        raise SystemExit(1)
-    return url, user, password
+login_url = f"{TB_URL}/api/auth/login"
+resp = requests.post(login_url, json={'username': TB_USERNAME, 'password': TB_PASSWORD}, timeout=15)
+resp.raise_for_status()
+token = resp.json().get('token')
+if not token:
+    print('[ERR] No se recibió token JWT', file=sys.stderr)
+    raise SystemExit(2)
 
+session = requests.Session()
+session.headers.update({'X-Authorization': f'Bearer {token}'})
 
-def fetch_devices(api: TB, prefix: str) -> list[dict]:
-    collected: list[dict] = []
-    page = 0
-    page_size = 500
-    pattern = re.compile(rf"^{re.escape(prefix)}-(\d+)$")
-    while True:
-        params = {"pageSize": page_size, "page": page, "textSearch": prefix}
-        resp = api.session.get(f"{api.base}/api/tenant/devices", params=params, timeout=api.timeout)
-        if resp.status_code != 200:
-            raise TBError(f"Fallo al listar devices: {resp.status_code} {resp.text}")
-        payload = resp.json()
-        data = payload.get("data", [])
-        collected.extend(d for d in data if d.get("name", "").startswith(prefix))
-        if not payload.get("hasNext"):
-            break
-        page += 1
-    collected.sort(key=lambda item: extract_index(item.get("name", ""), pattern))
-    return collected
+page = 0
+page_size = 200
+to_delete = []
+while True:
+    params = {'pageSize': page_size, 'page': page}
+    resp = session.get(f"{TB_URL}/api/tenant/devices", params=params, timeout=15)
+    resp.raise_for_status()
+    payload = resp.json()
+    data = payload.get('data', [])
+    to_delete.extend([d for d in data if d.get('name', '').startswith(PREFIX)])
+    if not payload.get('hasNext'):
+        break
+    page += 1
 
+print(f"[INFO] Encontrados {len(to_delete)} dispositivos con prefijo '{PREFIX}'")
+for dev in to_delete:
+    dev_id = dev['id']['id']
+    name = dev.get('name', dev_id)
+    resp = session.delete(f"{TB_URL}/api/device/{dev_id}", timeout=15)
+    if resp.status_code == 200:
+        print(f"[DEL] {name}")
+    elif resp.status_code == 404:
+        print(f"[WARN] {name} ya no existe")
+    else:
+        print(f"[WARN] No se pudo borrar {name}: {resp.status_code} {resp.text}")
 
-def extract_index(name: str, pattern: re.Pattern[str]) -> tuple[int, str]:
-    match = pattern.match(name)
-    if match:
-        return int(match.group(1)), name
-    return (10_000_000, name)
-
-
-def main() -> None:
-    url, user, password = ensure_credentials()
-
-    with TB(url, user, password) as api:
-        api.login()
-        devices = fetch_devices(api, PREFIX)
-        total = len(devices)
-        if total == 0:
-            print(f"[INFO] No se encontraron dispositivos con prefijo '{PREFIX}'.")
-            return
-
-        print(f"[INFO] Detectados {total} dispositivos con prefijo '{PREFIX}'. Se eliminaran todos.")
-        deleted = 0
-        for dev in devices:
-            dev_id = dev["id"]["id"]
-            name = dev.get("name", dev_id)
-            try:
-                api.delete_device(dev_id)
-                print(f"[DEL] {name}")
-                deleted += 1
-            except TBError as exc:
-                print(f"[WARN] No se pudo borrar {name}: {exc}")
-        print(f"[OK] Limpieza completada. Eliminados: {deleted}.")
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except TBError as exc:
-        print(f"[ERR] {exc}", file=sys.stderr)
-        raise SystemExit(2)
+print('[OK] Limpieza completada')
