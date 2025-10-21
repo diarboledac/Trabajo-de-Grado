@@ -2,18 +2,28 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Create devices",
+      "name": "Provision 100 devices",
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/scripts/create_devices.py",
-      "envFile": "${workspaceFolder}/.env"
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal"
     },
     {
-      "name": "Send telemetry",
+      "name": "Send telemetry with metrics",
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/scripts/send_telemetry.py",
-      "envFile": "${workspaceFolder}/.env"
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Check ThingsBoard connectivity",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/check_connectivity.py",
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal"
     }
   ]
 }

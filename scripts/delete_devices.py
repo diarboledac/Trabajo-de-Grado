@@ -14,7 +14,7 @@ from tb import TB, TBError
 load_dotenv(override=True)
 
 ROOT = Path(__file__).resolve().parents[1]
-CSV_FILE = ROOT / "data" / "devices.csv"
+CSV_FILE = ROOT / "data" / "provisioning" / "devices.csv"
 
 TB_URL = os.getenv("TB_URL", "").rstrip("/")
 TB_USERNAME = os.getenv("TB_USERNAME")

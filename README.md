@@ -1,64 +1,257 @@
-﻿# ThingsBoard Telemetry Simulator
+# ThingsBoard Telemetry Load Lab
 
-Este repositorio crea (o reutiliza) dispositivos de prueba en ThingsBoard y publica telemetría concurrente para evaluar la plataforma. El flujo recomendado ejecuta **un único proceso/contendor** que envía los datos de todos los dispositivos al mismo tiempo.
+## 1. What This Project Does
+This repository creates a realistic, repeatable workload for a ThingsBoard tenant. It:
+- Provisions (or reuses) a fleet of 100 simulated devices tied to the Device Profile `3a022cf0-aae1-11f0-bea7-7bc7d3c79da2`.
+- Opens simultaneous MQTT connections (one per device) and publishes telemetry in parallel.
+- Logs every message, disconnect, and error for post-run analysis.
+- Exposes a real-time metrics dashboard (Flask on port 5050 by default) showing throughput, bandwidth, connections, and failure causes.
+- Generates structured JSON reports so you can track capacity changes between runs.
 
-## Requisitos
-- Python 3.9 o superior (en Windows se recomienda el lanzador `py`).
-- Acceso al tenant de ThingsBoard (`TB_URL`) y al broker MQTT (`MQTT_HOST` / `MQTT_PORT`).
-- Docker (opcional) si deseas ejecutar la simulación dentro de un contenedor único.
+> **Goal:** give engineers full control to stress ThingsBoard, understand its limits, and triage bottlenecks quickly.
 
-## Variables de entorno (`.env`)
-| Variable | Descripción |
-|----------|-------------|
-| `TB_URL` | URL base del servidor ThingsBoard (REST). |
-| `TB_USERNAME`, `TB_PASSWORD` | Credenciales del tenant. |
-| `DEVICE_PREFIX`, `DEVICE_COUNT` | Prefijo y cantidad de dispositivos a crear (por defecto 20). |
-| `DEVICE_LABEL`, `DEVICE_TYPE` | Metadatos asignados a cada dispositivo. |
-| `MQTT_HOST`, `MQTT_PORT`, `MQTT_TLS` | Destino del broker MQTT. |
-| `PUBLISH_INTERVAL_SEC` | Intervalo entre publicaciones por hilo. |
+---
 
-Para ajustar la IP/host del servidor, modifica directamente `.env` y, si cambias la cantidad de dispositivos, vuelve a ejecutar `scripts/create_devices.py` para regenerar tokens.
+## 2. System Requirements
+| Requirement          | Description                                                                                     |
+|----------------------|-------------------------------------------------------------------------------------------------|
+| OS                   | Windows, macOS, or Linux (scripts are cross-platform).                                          |
+| Python               | Version 3.9 or newer. On Windows, use the `py` launcher.                                        |
+| Network              | Reachable ThingsBoard REST endpoint and MQTT broker (plain TCP or TLS).                         |
+| Credentials          | Tenant-level username/password for provisioning devices.                                        |
+| Optional tools       | Docker (not required), VS Code (tasks/launch configs included).                                |
 
-## Flujo típico
-1. **Instala dependencias:**
-   ```bash
-   py -3 -m pip install -r requirements.txt
-   ```
-2. **Provisiona los dispositivos en ThingsBoard** (usa el `DEVICE_COUNT` deseado):
-   ```bash
-   py -3 scripts/create_devices.py
-   ```
-   Al finalizar, los tokens quedan en `data/tokens.json` y el reporte en `data/devices.csv`.
-3. **Lanza la simulación sincronizada:**
-   ```bash
-   py -3 scripts/send_telemetry.py
-   ```
-   El script crea un hilo por dispositivo, sincroniza la primera publicación con una barrera y continúa enviando telemetría cada `PUBLISH_INTERVAL_SEC`. Detén el envío con `Ctrl+C` o cerrando la consola.
+Install dependencies once per machine:
+```bash
+py -3 -m pip install -r requirements.txt
+```
 
-## Ejecutar en Docker (un solo contenedor)
-1. Construye la imagen desde la raíz:
-   ```bash
-   docker build -t tb-sim .
-   ```
-2. Ejecuta el contenedor montando `.env` y la carpeta `data` para reutilizar los tokens:
-   ```bash
-   docker run --rm \
-     -v %CD%\data:/app/data \
-     -v %CD%\.env:/app/.env:ro \
-     tb-sim
-   ```
-   (En macOS/Linux, reemplaza `%CD%` por `$(pwd)`).
+---
 
-## Scripts útiles
-- `scripts/create_devices.py`: crea o actualiza los dispositivos y tokens.
-- `scripts/send_telemetry.py`: ejecuta la simulación concurrente recomendada.
-- `scripts/create_and_stream.py`: variante que crea cada dispositivo y lanza un hilo MQTT al vuelo.
-- `scripts/delete_devices.py`: elimina los dispositivos listados en `data/devices.csv`.
+## 3. Repository Layout
+```
+.venv/                # Recommended virtual environment (ignored in Git)
+.vscode/              # Ready-to-use VS Code launch configurations and tasks
+data/
+  provisioning/       # tokens.json + devices.csv generated during provisioning
+  runs/               # run reports (JSON) including latest.json symlink/copy
+  logs/               # per-run execution logs
+scripts/
+  check_connectivity.py
+  create_devices.py
+  delete_by_prefix.py
+  delete_devices.py
+  metrics_server.py
+  report_last_run.py
+  send_telemetry.py
+  tb.py               # shared ThingsBoard REST client
+requirements.txt
+.env                  # local-only configuration (never commit secrets)
+```
+Everything under `data/` is ignored by Git so tokens and logs stay local.
 
-## Limpieza y utilidades
-- Para borrar los dispositivos de ThingsBoard: `py -3 scripts/delete_devices.py`.
-- Para reiniciar la simulación con otro número de dispositivos, cambia `DEVICE_COUNT` en `.env`, ejecuta `create_devices.py` y luego `send_telemetry.py`.
-- Ajusta los rangos de telemetría modificando `payload()` en `scripts/send_telemetry.py`.
+---
 
-## Verificar conectividad
-Para validar que la API de ThingsBoard responde puedes ejecutar `scripts/check_connectivity.py` (ver sección siguiente) o realizar el login/consulta mínima con un script propio antes de lanzar la simulación.
+## 4. Configuration (`.env`)
+Create or edit `.env` in the repo root. Each entry is read by both provisioning and telemetry scripts.
+
+| Key                     | Purpose                                                                                   |
+|-------------------------|--------------------------------------------------------------------------------------------|
+| `TB_URL`                | Base URL to the ThingsBoard REST API (e.g., `http://IP:8080`).                             |
+| `TB_USERNAME` / `TB_PASSWORD` | Tenant credentials used for device provisioning.                                  |
+| `DEVICE_PREFIX`         | Name prefix for simulated devices (default `sim`).                                         |
+| `DEVICE_COUNT`          | Number of devices to maintain (default 100).                                               |
+| `DEVICE_LABEL` / `DEVICE_TYPE` | Metadata applied to every device.                                                  |
+| `MQTT_HOST` / `MQTT_PORT` / `MQTT_TLS` | MQTT broker settings (`MQTT_TLS=1` forces TLS).                          |
+| `PUBLISH_INTERVAL_SEC`  | Seconds between telemetry messages for each device.                                        |
+| `DEVICE_PROFILE_ID`     | Profile ID used when provisioning; dashboard counts only devices on this profile.          |
+| `METRICS_HOST` / `METRICS_PORT` / `METRICS_REFRESH_MS` | Controls the Flask dashboard binding and refresh cadence. |
+
+> **Tip:** keep `.env` out of Git (already covered by `.gitignore`). Rotate credentials periodically.
+
+---
+
+## 5. End-to-End Workflow
+
+### Step 1 – Optional Connectivity Check
+Validates basic REST access before provisioning.
+```bash
+py -3 scripts/check_connectivity.py
+```
+- Performs a login, prints `[OK] Login exitoso`, and probes the devices list.
+- Failure here usually means wrong `TB_URL` or credentials.
+
+### Step 2 – Provision or Update Devices
+```bash
+py -3 scripts/create_devices.py
+```
+What happens:
+1. Logs into ThingsBoard, discovers the default profile (or uses `DEVICE_PROFILE_ID`).
+2. Ensures `DEVICE_COUNT` devices named `<DEVICE_PREFIX>-NNN` exist.
+3. Writes access tokens to `data/provisioning/tokens.json`.
+4. Exports device metadata to `data/provisioning/devices.csv`.
+5. Stores context attributes (`batch`, `group`, `index`) for easier filtering inside ThingsBoard.
+
+Rerun whenever you change `DEVICE_COUNT`, `DEVICE_PREFIX`, or want to rotate tokens.
+
+### Step 3 – Start the Telemetry Simulation
+```bash
+py -3 scripts/send_telemetry.py
+```
+This single command:
+1. Reads `tokens.json` and launches one thread per device.
+2. Connects every client to MQTT and synchronizes the first publish with a barrier.
+3. Sends JSON payloads every `PUBLISH_INTERVAL_SEC` seconds.
+4. Starts the Flask metrics server automatically (default `http://localhost:5050`).
+5. Logs all activity to `data/logs/<run-id>.log`.
+6. Writes a report to `data/runs/<run-id>.json` (and updates `data/runs/latest.json`).
+
+Stop the simulation with `Ctrl+C`. The threads shut down gracefully, the metrics server is closed, and **devices remain in ThingsBoard** for subsequent runs.
+
+---
+
+## 6. Telemetry Payload & Device Tracking
+Each MQTT message contains:
+```json
+{
+  "timestamp": "2025-10-17T20:15:32.123Z",
+  "device": "sim-042",
+  "sequence": 128,
+  "temperature": 26.45,
+  "humidity": 55,
+  "battery": 3.81,
+  "cpu_usage_percent": 43.2,
+  "memory_usage_mb": 210.5,
+  "network_latency_ms": 82.7,
+  "status": "warn",
+  "issue": "network-latency"
+}
+```
+
+Per device, the simulator records:
+- Connection time, first publish, last publish.
+- Message counters (success/failure).
+- Disconnects with MQTT reason codes (`connection lost`, `protocol violation`, etc.).
+- Runtime exceptions with coarse root cause classification (`network`, `memory`, generic).
+
+These metrics are stored in memory during the run, surfaced via the dashboard, and persisted in `data/runs/<run-id>.json`.
+
+---
+
+## 7. Real-Time Metrics Dashboard (Flask)
+When the simulation starts, browse to the metrics server:
+```
+http://<METRICS_HOST>:<METRICS_PORT>   # default http://localhost:5050
+```
+
+### Dashboard Sections
+- **Status Bar** – elapsed time, messages per second, current bandwidth (Mbps), channels in use (current connections).
+- **Connections Card** – total devices (from `.env`), current connected, peak connected, failed device count, collapse detection (time and reason).
+- **Traffic Card** – packets sent/failed, cumulative volume in MB, average messages per device, average message rate per device.
+- **Disconnect Causes Table** – top 10 reasons (aggregated from MQTT return codes and error handlers).
+- **Messages per Second Chart** – rolling line chart (last ~60 points).
+- **Bandwidth Chart** – Mbps trend, useful to spot saturation.
+- **Top Devices Table** – devices ordered by sent messages, showing failed counts per device.
+
+### Back-End Architecture
+- `MetricsCollector` (in `send_telemetry.py`) aggregates metrics under thread locks.
+- `MetricsServer` (in `scripts/metrics_server.py`) exposes the `/api/metrics` endpoint consumed by the dashboard and any external tooling.
+- Data refresh rate is controlled by `METRICS_REFRESH_MS` (default 2000 ms).
+
+---
+
+## 8. Post-Run Analysis
+
+### Logs
+- `data/logs/<run-id>.log` – chronological events (connections, disconnections, publish results, metrics snapshots).
+  - Recommended filters: `"[ERR]"`, `"[WARN]"`, `"[MQTT]"`, `"Metrics |"`.
+
+### JSON Report
+- `data/runs/<run-id>.json` – structured summary used by scripts and dashboards.
+  - `metrics` object mirrors dashboard values (messages/sec, bandwidth, collapse detection, etc.).
+  - `devices` dictionary holds per-device metrics (timestamps, payload, disconnect history).
+- `data/runs/latest.json` is updated after every run for easy access.
+
+### CLI Summary
+```bash
+py -3 scripts/report_last_run.py
+```
+Outputs:
+- Global metrics (connections, bandwidth, messages/sec, averages, disconnect causes).
+- Devices with errors, stalled telemetry, or delayed starts.
+- First 20 devices with sent message counts and disconnect totals.
+
+Use this as a quick sanity check or to paste results into incident reports.
+
+---
+
+## 9. Script Reference
+| Script | Description | Typical Usage |
+|--------|-------------|----------------|
+| `scripts/create_devices.py` | Provisions/updates the simulated fleet; saves tokens and CSV. | Run whenever the device fleet needs to change or tokens should refresh. |
+| `scripts/send_telemetry.py` | Main simulator, metrics collector, and dashboard bootstrapper. | Start the load test; stop with `Ctrl+C`. |
+| `scripts/metrics_server.py` | Flask server used internally by the simulator. | Imported automatically; seldom run standalone. |
+| `scripts/report_last_run.py` | Prints a friendly summary of the latest run’s JSON report. | Use after each run to capture KPIs. |
+| `scripts/check_connectivity.py` | Simple REST smoke test (login + one-page device list). | Run before provisioning if unsure about network/credentials. |
+| `scripts/delete_devices.py` | Deletes devices listed in `data/provisioning/devices.csv`. | Cleanup after lab sessions. |
+| `scripts/delete_by_prefix.py` | Deletes all tenant devices whose name starts with `DEVICE_PREFIX`. | Broad cleanup tool (use carefully). |
+| `scripts/tb.py` | Lightweight ThingsBoard REST client (shared by other scripts). | Internal helper; review if extending functionality. |
+
+VS Code users can leverage `.vscode/tasks.json` and `.vscode/launch.json` for one-click execution.
+
+---
+
+## 10. Customisation Scenarios
+| Scenario | Change | Files |
+|----------|--------|-------|
+| Different fleet size | Update `DEVICE_COUNT` (and optionally `DEVICE_PREFIX`). Re-run `create_devices.py`. | `.env`, `scripts/create_devices.py` (auto reads `.env`). |
+| Faster/slower publish rate | Modify `PUBLISH_INTERVAL_SEC`. Restart the simulator. | `.env`. |
+| TLS-enabled MQTT broker | Set `MQTT_TLS=1` and ensure certificates are trusted (see `paho-mqtt` docs). | `.env`, optionally extend `send_telemetry.py`. |
+| Additional telemetry fields | Edit the `payload()` method in `send_telemetry.py`. Maintain JSON-compatible values. | `scripts/send_telemetry.py`. |
+| Alternate dashboard port | Change `METRICS_PORT` in `.env`. | `.env`. |
+| Export metrics to another system | Consume `/api/metrics` or extend `MetricsServer` to push data elsewhere (Prometheus, InfluxDB, etc.). | `scripts/metrics_server.py`. |
+
+Always rerun `py -3 -m compileall scripts` (optional) after structural changes to catch syntax errors early.
+
+---
+
+## 11. Troubleshooting & FAQ
+- **`tokens.json` missing** – Run `py -3 scripts/create_devices.py` first.
+- **MQTT connection errors** – Verify broker host/port. If using TLS, check certificates and set `MQTT_TLS=1`.
+- **Dashboard not reachable** – Ensure the simulator is running, and confirm `METRICS_HOST`/`METRICS_PORT` in `.env`. Run `netstat -ano | findstr :5050` on Windows to check bindings.
+- **Collapse detected early** – Check `disconnect_causes` on the dashboard/report. Common reasons: broker capacity, network latency, or ThingsBoard rate limits.
+- **Need to rerun with clean state** – Use `delete_devices.py` or `delete_by_prefix.py`, then provision again.
+- **Scripts require proxy access** – Set `HTTP_PROXY`/`HTTPS_PROXY` environment variables before running any script.
+
+---
+
+## 12. Operational Checklist
+1. Populate `.env` with accurate URLs, credentials, and desired fleet parameters.
+2. Install dependencies with `py -3 -m pip install -r requirements.txt`.
+3. (Optional) Validate REST access using `check_connectivity.py`.
+4. Provision devices via `create_devices.py`.
+5. Launch the simulator (`send_telemetry.py`) and monitor `http://localhost:5050`.
+6. After the test, capture the CLI summary and archive the generated log + JSON report.
+7. Clean up devices only if necessary.
+
+Following this checklist ensures repeatable, well-documented load tests.
+
+---
+
+## 13. Contributing / Extending
+- **New telemetry scenarios** – Fork the payload generator and metrics collector.
+- **CI integration** – Wrap the scripts in container jobs or GitHub Actions to run scheduled performance tests.
+- **Alerting** – Extend `MetricsServer` to push data to monitoring stacks (Prometheus, Grafana, ELK, etc.).
+- **Visualization** – Replace the lightweight Chart.js dashboard with a front-end of choice; the `/api/metrics` endpoint is a stable contract.
+
+For collaboration, keep secrets out of version control, open pull requests with context, and add unit/integration tests if you modify REST/MQTT logic.
+
+---
+
+### Need Help?
+If you hit issues not covered here:
+- Examine `data/logs/<run-id>.log` for detailed context.
+- Compare `data/runs/<run-id>.json` with a known-good run.
+- Reach out to the platform team with logs, JSON reports, and `.env` (with sensitive fields redacted).
+
+Happy load testing!

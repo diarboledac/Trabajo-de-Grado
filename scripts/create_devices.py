@@ -17,14 +17,15 @@ load_dotenv(override=True)
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
-TOKENS_FILE = DATA_DIR / "tokens.json"
-CSV_FILE = DATA_DIR / "devices.csv"
+PROVISION_DIR = DATA_DIR / "provisioning"
+TOKENS_FILE = PROVISION_DIR / "tokens.json"
+CSV_FILE = PROVISION_DIR / "devices.csv"
 
 TB_URL = os.getenv("TB_URL", "").rstrip("/")
 TB_USERNAME = os.getenv("TB_USERNAME")
 TB_PASSWORD = os.getenv("TB_PASSWORD")
 DEVICE_PREFIX = os.getenv("DEVICE_PREFIX", "sim")
-DEVICE_COUNT = int(os.getenv("DEVICE_COUNT", "50"))
+DEVICE_COUNT = int(os.getenv("DEVICE_COUNT", "100"))
 DEVICE_LABEL = os.getenv("DEVICE_LABEL", "sim-lab")
 DEVICE_TYPE = os.getenv("DEVICE_TYPE", "sensor")
 PROFILE_ID = os.getenv("DEVICE_PROFILE_ID")
@@ -43,7 +44,7 @@ def main() -> None:
     if not TB_URL or not TB_USERNAME or not TB_PASSWORD:
         fail("Config .env incompleta (TB_URL, TB_USERNAME, TB_PASSWORD)")
 
-    ensure_dir(DATA_DIR)
+    ensure_dir(PROVISION_DIR)
 
     tokens_map: dict[str, str] = {}
     rows: list[list[str]] = []
