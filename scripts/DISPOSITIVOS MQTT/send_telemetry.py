@@ -22,7 +22,7 @@ from metrics_server import MetricsServer
 
 load_dotenv(override=True)
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data"
 PROVISION_DIR = DATA_DIR / "provisioning"
 RUNS_DIR = DATA_DIR / "runs"

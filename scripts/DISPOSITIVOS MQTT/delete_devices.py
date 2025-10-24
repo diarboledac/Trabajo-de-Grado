@@ -13,7 +13,7 @@ from tb import TB, TBError
 
 load_dotenv(override=True)
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 CSV_FILE = ROOT / "data" / "provisioning" / "devices.csv"
 
 TB_URL = os.getenv("TB_URL", "").rstrip("/")

@@ -2,3 +2,7 @@ requests>=2.31
 paho-mqtt>=1.6
 python-dotenv>=1.0
 Flask>=2.3
+asyncio-mqtt>=0.16
+aiofiles>=23.2
+aiodns>=3.2
+aiohttp>=3.9

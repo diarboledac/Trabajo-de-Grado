@@ -1,0 +1,4 @@
+timestamp,uptime_seconds,total_devices,active_clients,successful_publishes,failed_publishes,avg_latency_ms,p50_latency_ms,p95_latency_ms,p99_latency_ms,messages_per_second
+2025-10-21T22:44:21.182417+00:00,5.01,3,0,0,0,,,,,0.0
+2025-10-21T22:44:26.183897+00:00,10.01,3,0,0,0,,,,,0.0
+2025-10-21T22:44:31.182534+00:00,15.01,3,0,0,0,,,,,0.0

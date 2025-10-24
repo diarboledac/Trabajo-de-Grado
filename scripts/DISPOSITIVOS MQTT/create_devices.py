@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -15,7 +16,7 @@ from tb import TB, TBError
 
 load_dotenv(override=True)
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data"
 PROVISION_DIR = DATA_DIR / "provisioning"
 TOKENS_FILE = PROVISION_DIR / "tokens.json"
@@ -29,6 +30,7 @@ DEVICE_COUNT = int(os.getenv("DEVICE_COUNT", "100"))
 DEVICE_LABEL = os.getenv("DEVICE_LABEL", "sim-lab")
 DEVICE_TYPE = os.getenv("DEVICE_TYPE", "sensor")
 PROFILE_ID = os.getenv("DEVICE_PROFILE_ID")
+NAME_PATTERN = re.compile(rf"^{re.escape(DEVICE_PREFIX)}-(\d+)$")
 
 
 def fail(msg: str, code: int = 1) -> None:
@@ -61,18 +63,31 @@ def main() -> None:
                 print("[INFO] No se encontró Device Profile por defecto")
 
             for idx in range(1, DEVICE_COUNT + 1):
-                name = f"{DEVICE_PREFIX}-{idx:03d}"
-                print(f"[INFO] Creando/recuperando '{name}'...")
+                expected_name = f"{DEVICE_PREFIX}-{idx:03d}"
+                print(f"[INFO] Creando/recuperando '{expected_name}'...")
                 device = api.save_device(
-                    name,
+                    expected_name,
                     label=DEVICE_LABEL,
                     dev_type=DEVICE_TYPE,
                     profile_id=profile_id,
                 )
                 dev_id = device["id"]["id"]
                 token = api.token(dev_id)
-                tokens_map[name] = token
-                rows.append([dev_id, name, device.get("label", ""), token])
+                actual_name = device.get("name", expected_name)
+                match = NAME_PATTERN.fullmatch(actual_name)
+                if not match:
+                    fail(
+                        f"El dispositivo '{actual_name}' no cumple el patrón '{DEVICE_PREFIX}-NNN'. "
+                        "Elimina manualmente los dispositivos con nombres inválidos e intenta de nuevo."
+                    )
+                number = int(match.group(1))
+                if number != idx:
+                    fail(
+                        f"El dispositivo '{actual_name}' no corresponde al índice esperado {idx}. "
+                        "Asegúrate de no tener dispositivos duplicados o fuera de secuencia."
+                    )
+                tokens_map[expected_name] = token
+                rows.append([dev_id, expected_name, device.get("label", ""), token])
                 api.set_attrs(
                     dev_id,
                     {

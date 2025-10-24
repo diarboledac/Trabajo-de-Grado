@@ -1,0 +1,4 @@
+timestamp,uptime_seconds,elapsed_seconds,total_devices,active_clients,connected_devices,successful_publishes,failed_publishes,failed_devices,avg_latency_ms,p50_latency_ms,p95_latency_ms,p99_latency_ms,messages_per_second,bandwidth_mbps,avg_send_rate_per_device,avg_messages_per_device
+2025-10-22T23:51:36.807772+00:00,5.03,5.033731,4,0,0,0,12,4,,,,,0.0,0.0,0.0,0.0
+2025-10-22T23:51:41.816191+00:00,10.04,10.04215,4,0,0,0,16,4,,,,,0.0,0.0,0.0,0.0
+2025-10-22T23:51:46.807532+00:00,15.03,15.033491,4,0,0,0,16,4,,,,,0.0,0.0,0.0,0.0

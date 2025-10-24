@@ -7,7 +7,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 RUNS_DIR = ROOT / "data" / "runs"
 LATEST_FILE = RUNS_DIR / "latest.json"
 
