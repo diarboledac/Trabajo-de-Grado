@@ -3,4 +3,11 @@ __pycache__/
 data/provisioning/
 data/runs/
 data/logs/
+data/metrics/
+data/control/
 *.log
+
+# Docker / local env
+.env
+.dockerignore
+docker-compose.override.yml

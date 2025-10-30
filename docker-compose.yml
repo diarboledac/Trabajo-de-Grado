@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - ./:/app:delegated
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"
+    # Por defecto abre bash; reemplaza command para iniciar tu servidor (ej: python main.py)
+    command: bash
+    tty: true
+
+  locust:
+    image: locustio/locust:latest
+    depends_on:
+      - app
+    volumes:
+      - ./:/mnt/locust:ro
+    working_dir: /mnt/locust
+    env_file:
+      - .env
+    command: >
+      -f locustfile.py --headless
+      --users 200 --spawn-rate 20
+      --run-time 120s --host http://app:8000

@@ -15,13 +15,14 @@ import signal
 import subprocess
 import sys
 import threading
+import time
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import fmean
 from time import perf_counter
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Set
 
 import aiofiles
 import aiohttp
@@ -37,7 +38,10 @@ DATA_DIR = ROOT / "data"
 DEFAULT_TOKENS_FILE = DATA_DIR / "provisioning" / "tokens.json"
 LOGS_DIR = DATA_DIR / "logs"
 METRICS_DIR = DATA_DIR / "metrics"
+CONTROL_DIR = DATA_DIR / "control"
 DEFAULT_TOPIC = "v1/devices/me/telemetry"
+DEFAULT_DISABLED_FILE = CONTROL_DIR / "disabled_devices.json"
+DEFAULT_PID_FILE = CONTROL_DIR / "mqtt_stress.pid"
 
 load_dotenv(override=True)
 
@@ -66,6 +70,66 @@ ENV_METRICS_PORT = int(os.getenv("METRICS_PORT", "5050"))
 ENV_METRICS_REFRESH_MS = int(os.getenv("METRICS_REFRESH_MS", "2000"))
 ENV_TOPIC = os.getenv("MQTT_TOPIC", DEFAULT_TOPIC)
 ENV_QOS = int(os.getenv("MQTT_QOS", "1"))
+ENV_DISABLED_FILE = os.getenv("DISABLED_DEVICES_FILE")
+ENV_PID_FILE = os.getenv("SIM_PID_FILE")
+
+
+class DeviceToggleRegistry:
+    """Keeps track of devices manually disabled via a shared JSON file."""
+
+    def __init__(self, path: Path, refresh_interval: float = 2.0) -> None:
+        self.path = path
+        self.refresh_interval = max(refresh_interval, 0.5)
+        self._disabled: Set[str] = set()
+        self._last_loaded = 0.0
+        self._last_mtime: Optional[float] = None
+        self._last_error: Optional[str] = None
+
+    def _should_refresh(self) -> bool:
+        return time.monotonic() - self._last_loaded >= self.refresh_interval
+
+    def _load(self) -> None:
+        try:
+            stat = self.path.stat()
+        except FileNotFoundError:
+            self._disabled.clear()
+            self._last_mtime = None
+            self._last_loaded = time.monotonic()
+            self._last_error = None
+            return
+        if self._last_mtime is not None and stat.st_mtime == self._last_mtime:
+            self._last_loaded = time.monotonic()
+            return
+        try:
+            data = json.loads(self.path.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                disabled_raw = data.get("disabled", [])
+            elif isinstance(data, list):
+                disabled_raw = data
+            else:
+                disabled_raw = []
+            self._disabled = {str(item) for item in disabled_raw}
+            self._last_mtime = stat.st_mtime
+            self._last_error = None
+        except Exception as exc:  # noqa: BLE001
+            message = str(exc)
+            if message != self._last_error:
+                print(f"[WARN] No se pudo leer {self.path}: {exc}", file=sys.stderr)
+                self._last_error = message
+        finally:
+            self._last_loaded = time.monotonic()
+
+    def _refresh_if_needed(self) -> None:
+        if self._should_refresh():
+            self._load()
+
+    def is_disabled(self, device_id: str) -> bool:
+        self._refresh_if_needed()
+        return device_id in self._disabled
+
+    def current_disabled(self) -> Set[str]:
+        self._refresh_if_needed()
+        return set(self._disabled)
 
 
 # Paho MQTT >=2.0 eliminó `message_retry_set`, pero asyncio-mqtt todavía lo invoca.
@@ -386,6 +450,7 @@ class DeviceWorker:
         stop_event: asyncio.Event,
         backoff_base: float,
         backoff_max: float,
+        toggle_registry: DeviceToggleRegistry,
     ) -> None:
         self.config = config
         self.host = host
@@ -398,7 +463,40 @@ class DeviceWorker:
         self.stop_event = stop_event
         self.backoff_base = max(backoff_base, 0.1)
         self.backoff_max = max(backoff_max, self.backoff_base)
+        self.toggle_registry = toggle_registry
+        self._toggle_sleep = max(0.5, toggle_registry.refresh_interval)
+        self._last_disabled_state = False
         self._message_sequence = 0
+
+    async def _handle_manual_toggle(self) -> bool:
+        disabled = self.toggle_registry.is_disabled(self.config.device_id)
+        if disabled:
+            if not self._last_disabled_state:
+                await self.event_logger.log(
+                    {
+                        "timestamp": utcnow().isoformat(),
+                        "device": self.config.device_id,
+                        "event": "manual_toggle",
+                        "status": "disabled",
+                    }
+                )
+            self._last_disabled_state = True
+            try:
+                await asyncio.wait_for(self.stop_event.wait(), timeout=self._toggle_sleep)
+            except asyncio.TimeoutError:
+                pass
+            return True
+        if self._last_disabled_state:
+            await self.event_logger.log(
+                {
+                    "timestamp": utcnow().isoformat(),
+                    "device": self.config.device_id,
+                    "event": "manual_toggle",
+                    "status": "enabled",
+                }
+            )
+        self._last_disabled_state = False
+        return False
 
     def _build_payload(self) -> Dict[str, Any]:
         self._message_sequence += 1
@@ -452,6 +550,8 @@ class DeviceWorker:
     async def run(self) -> None:
         backoff = self.backoff_base
         while not self.stop_event.is_set():
+            if await self._handle_manual_toggle():
+                continue
             connected = False
             disconnect_reason = "unknown"
             try:
@@ -475,6 +575,29 @@ class DeviceWorker:
                         }
                     )
                     while not self.stop_event.is_set():
+                        if self.toggle_registry.is_disabled(self.config.device_id):
+                            if not self._last_disabled_state:
+                                await self.event_logger.log(
+                                    {
+                                        "timestamp": utcnow().isoformat(),
+                                        "device": self.config.device_id,
+                                        "event": "manual_toggle",
+                                        "status": "disabled",
+                                    }
+                                )
+                            self._last_disabled_state = True
+                            disconnect_reason = "manual_disabled"
+                            break
+                        if self._last_disabled_state:
+                            await self.event_logger.log(
+                                {
+                                    "timestamp": utcnow().isoformat(),
+                                    "device": self.config.device_id,
+                                    "event": "manual_toggle",
+                                    "status": "enabled",
+                                }
+                            )
+                            self._last_disabled_state = False
                         published = await self._publish(client)
                         if not published:
                             disconnect_reason = "mqtt_publish_error"
@@ -515,7 +638,13 @@ class DeviceWorker:
                 )
             finally:
                 if connected:
-                    graceful = disconnect_reason in {"graceful", "loop_exit", "stopped", "cancelled"}
+                    graceful = disconnect_reason in {
+                        "graceful",
+                        "loop_exit",
+                        "stopped",
+                        "cancelled",
+                        "manual_disabled",
+                    }
                     self.metrics.record_client_disconnected(
                         self.config.device_id, disconnect_reason, graceful=graceful
                     )
@@ -529,7 +658,7 @@ class DeviceWorker:
                     )
             if self.stop_event.is_set():
                 break
-            if disconnect_reason in {"graceful", "loop_exit", "stopped"}:
+            if disconnect_reason in {"graceful", "loop_exit", "stopped", "manual_disabled"}:
                 break
             await asyncio.sleep(min(backoff, self.backoff_max))
             backoff = min(backoff * 2, self.backoff_max)
@@ -743,6 +872,18 @@ async def run_simulation(args: argparse.Namespace) -> None:
         ramp_sequence = parse_ramp_percentages(args.ramp_percentages, len(selected_devices))
     else:
         ramp_sequence = parse_ramp(ramp_counts_input, total_devices=len(selected_devices))
+    toggle_registry = DeviceToggleRegistry(args.disabled_devices_file)
+    disabled_now = toggle_registry.current_disabled()
+    if disabled_now:
+        sorted_names = sorted(disabled_now)
+        preview = ", ".join(sorted_names[:10])
+        remainder = len(sorted_names) - 10
+        if remainder > 0:
+            preview += f", ... (+{remainder} más)"
+        print(
+            f"[INFO] {len(sorted_names)} dispositivo(s) deshabilitado(s) manualmente: {preview}",
+            file=sys.stderr,
+        )
     metrics = MetricsAggregator(total_devices=len(selected_devices))
     session_id_base = utcnow().strftime("async-run-%Y%m%d-%H%M%S")
     shard_suffix = ""
@@ -839,6 +980,7 @@ async def run_simulation(args: argparse.Namespace) -> None:
             stop_event=stop_event,
             backoff_base=args.backoff_base,
             backoff_max=args.backoff_max,
+            toggle_registry=toggle_registry,
         )
         for device in selected_devices
     ]
@@ -992,6 +1134,18 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         help="Directorio donde guardar métricas en CSV.",
     )
     parser.add_argument(
+        "--disabled-devices-file",
+        type=Path,
+        default=Path(ENV_DISABLED_FILE) if ENV_DISABLED_FILE else DEFAULT_DISABLED_FILE,
+        help="Archivo JSON con la lista de dispositivos deshabilitados manualmente.",
+    )
+    parser.add_argument(
+        "--pid-file",
+        type=Path,
+        default=Path(ENV_PID_FILE) if ENV_PID_FILE else DEFAULT_PID_FILE,
+        help="Archivo donde guardar el PID del orquestador para poder detenerlo fácilmente.",
+    )
+    parser.add_argument(
         "--backoff-base",
         type=float,
         default=1.0,
@@ -1104,7 +1258,15 @@ def orchestrate(args: argparse.Namespace) -> None:
         f"(total={total_devices})."
     )
 
+    pid_path = args.pid_file if args.pid_file else None
+    pid_written = False
+
     try:
+        if pid_path is not None:
+            pid_path.parent.mkdir(parents=True, exist_ok=True)
+            pid_path.write_text(str(os.getpid()), encoding="utf-8")
+            pid_written = True
+
         aggregator_host = "127.0.0.1"
         aggregator_port = args.metrics_port
         collector = GlobalMetricsCollector()
@@ -1159,6 +1321,8 @@ def orchestrate(args: argparse.Namespace) -> None:
 
             if args.metrics_host:
                 cmd.extend(["--metrics-host", args.metrics_host])
+            if args.disabled_devices_file:
+                cmd.extend(["--disabled-devices-file", str(args.disabled_devices_file)])
 
             cmd.append("--disable-dashboard")
 
@@ -1214,6 +1378,9 @@ def orchestrate(args: argparse.Namespace) -> None:
     finally:
         if aggregator_server is not None:
             aggregator_server.stop()
+        if pid_written and pid_path is not None and pid_path.exists():
+            with contextlib.suppress(Exception):
+                pid_path.unlink()
 
 
 def main() -> None:
