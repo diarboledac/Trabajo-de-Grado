@@ -1,296 +1,214 @@
 # ThingsBoard Telemetry Load Lab
 
-## 1. What This Project Does
-This repository creates a realistic, repeatable workload for a ThingsBoard tenant. It:
-- Provisions (or reuses) a fleet of 100 simulated devices tied to the Device Profile `3a022cf0-aae1-11f0-bea7-7bc7d3c79da2`.
-- Opens simultaneous MQTT connections (one per device) and publishes telemetry in parallel.
-- Logs every message, disconnect, and error for post-run analysis.
-- Exposes a real-time metrics dashboard (Flask on port 5050 by default) showing throughput, bandwidth, connections, and failure causes.
-- Generates structured JSON reports so you can track capacity changes between runs.
-
-> **Goal:** give engineers full control to stress ThingsBoard, understand its limits, and triage bottlenecks quickly.
+Repositorio para ejecutar pruebas de esfuerzo reproducibles sobre un tenant de ThingsBoard. Incluye herramientas para aprovisionar dispositivos simulados, publicar telemetría vía MQTT, recopilar métricas, analizar resultados y repetir corridas con un solo comando o mediante contenedores Docker.
 
 ---
 
-## 2. System Requirements
-| Requirement          | Description                                                                                     |
-|----------------------|-------------------------------------------------------------------------------------------------|
-| OS                   | Windows, macOS, or Linux (scripts are cross-platform).                                          |
-| Python               | Version 3.9 or newer. On Windows, use the `py` launcher.                                        |
-| Network              | Reachable ThingsBoard REST endpoint and MQTT broker (plain TCP or TLS).                         |
-| Credentials          | Tenant-level username/password for provisioning devices.                                        |
-| Optional tools       | Docker (not required), VS Code (tasks/launch configs included).                                |
-
-Install dependencies once per machine:
-```bash
-py -3 -m pip install -r requirements.txt
-```
+## 1. Componentes principales
+- **Simulador asíncrono (`scripts/mqtt/mqtt_stress_async.py`)**: abre conexiones MQTT para cada dispositivo, publica carga configurable y expone un dashboard Flask con métricas en tiempo real.
+- **Orquestador (`scripts/mqtt/run_stress_suite.py`)**: automatiza el flujo completo (aprovisionar ? activar ? ejecutar ? desactivar) y acepta los mismos argumentos que el simulador.
+- **Herramientas auxiliares**: creación/limpieza de dispositivos, activación/desactivación manual y detención segura de corridas en curso.
+- **Infraestructura Docker**: `Dockerfile`, `entrypoint.sh` y `docker-compose.yml` permiten replicar el entorno en cualquier máquina con Docker Desktop.
+- **Locust (`locustfile.py`)**: ejemplo mínimo para generar tráfico HTTP adicional si se desea comparar cargas.
 
 ---
 
-## 3. Repository Layout
+## 2. Estructura del repositorio
 ```
-.venv/                      # Recommended virtual environment (ignored in Git)
-.vscode/                    # Ready-to-use VS Code launch configurations and tasks
-data/
-  provisioning/             # tokens.json + devices.csv generated during provisioning
-  runs/                     # run reports (JSON) including latest.json symlink/copy
-  logs/                     # per-run execution logs
-  control/                  # pid + toggle files used to manage manual overrides
+.venv/                      # Ambiente virtual recomendado (ignorando en Git)
+.vscode/                    # Tareas y launchers para VS Code
 scripts/
-  mqtt/                     # MQTT tooling (simulators, provisioning, helpers)
-    mqtt_stress_async.py    # orchestrator + async workers + global dashboard
-    run_stress_suite.py     # automatiza provisiÃ³n, activaciÃ³n y ejecuciÃ³n de la prueba
-    metrics_server.py       # aggregated metrics server
-    create_devices.py       # provisioning helper
-    delete_devices.py       # cleanup helpers
-    activate_devices.py     # activa dispositivos registrados
-    deactivate_devices.py   # desactiva dispositivos registrados
-    toggle_devices.py       # manual activation/deactivation helper
-    stop_simulation.py      # sends signals to stop the async simulator
-    send_telemetry.py       # legacy threaded simulator
-    tb.py                   # shared ThingsBoard REST client
-    ...
-requirements.txt
-.env                        # local-only configuration (never commit secrets)
+  mqtt/
+    activate_devices.py     # Activa dispositivos (por nombre/prefijo/todos)
+    create_devices.py       # Aprovisiona o actualiza la flota en ThingsBoard
+    deactivate_devices.py   # Desactiva dispositivos y actualiza control local
+    delete_by_prefix.py     # Elimina dispositivos cuyo nombre comparta prefijo
+    delete_devices.py       # Elimina los IDs listados en data/provisioning
+    metrics_server.py       # Dashboard Flask consumido por el simulador
+    mqtt_stress_async.py    # Simulador principal (asyncio + MQTT)
+    report_last_run.py      # Resumen legible del último JSON generado
+    run_stress_suite.py     # Automatiza todo el flujo de prueba
+    send_telemetry.py       # Simulador heredado (threads) opcional
+    stop_simulation.py      # Envía señal (SIGTERM/SIGINT) al simulador activo
+    tb.py                   # Cliente REST simplificado para ThingsBoard
+    toggle_devices.py       # API común para activar/desactivar desde CLI
+locustfile.py               # Ejemplo de carga HTTP usando Locust
+requirements.txt            # Dependencias Python de la solución
+Dockerfile                  # Imagen para ejecutar run_stress_suite en contenedor
+entrypoint.sh               # Instala dependencias al iniciar el contenedor
+docker-compose.yml          # Shell interactiva sobre la imagen construida
+.env.example                # Plantilla de variables de entorno
+.env                        # Configuración real (no compartir)
+data/
+  provisioning/             # tokens.json + devices.csv (ignorados en Git)
+  logs/                     # Logs en formato JSONL por corrida
+  metrics/                  # Snapshots CSV por shard/corrida
+  control/                  # Archivos de control (PID, dispositivos deshabilitados)
 ```
-Everything under `data/` is ignored by Git so tokens and logs stay local. All MQTT-related scripts now reside inside `scripts/mqtt/`.
+Todo lo que viva en `data/` queda fuera del repositorio (`.gitignore`) y puede montarse como volumen dentro de contenedores para conservar tokens, logs y reportes.
 
 ---
 
-## 4. Configuration (`.env`)
-Create or edit `.env` in the repo root. Each entry is read by both provisioning and telemetry scripts.
+## 3. Requisitos y preparación
+### 3.1 Software necesario
+| Recurso | Detalle |
+|---------|---------|
+| Python 3.9+ | Ejecución directa desde el sistema operativo. |
+| Docker Desktop (opcional) | Permite crear contenedores idénticos en otras máquinas. |
+| Acceso a ThingsBoard | Endpoint REST y broker MQTT accesibles desde la máquina de pruebas. |
+| Credenciales Tenant | Usuario/clave con permiso para crear y eliminar dispositivos. |
 
-| Key                     | Purpose                                                                                   |
-|-------------------------|--------------------------------------------------------------------------------------------|
-| `TB_URL`                | Base URL to the ThingsBoard REST API (e.g., `http://IP:8080`).                             |
-| `TB_PARENT_URL`         | Optional parent/central ThingsBoard URL for mirrored cleanup (e.g., `http://192.168.1.159:8080`). |
-| `TB_USERNAME` / `TB_PASSWORD` | Tenant credentials used for device provisioning.                                  |
-| `TB_PARENT_USERNAME` / `TB_PARENT_PASSWORD` | Override credentials for the parent server (defaults to the edge values). |
-| `DEVICE_PREFIX`         | Name prefix for simulated devices (default `sim`).                                         |
-| `DEVICE_COUNT`          | Number of devices to maintain (default 100).                                               |
-| `DEVICE_LABEL` / `DEVICE_TYPE` | Metadata applied to every device.                                                  |
-| `MQTT_HOST` / `MQTT_PORT` / `MQTT_TLS` | MQTT broker settings (`MQTT_TLS=1` forces TLS).                          |
-| `PUBLISH_INTERVAL_SEC`  | Seconds between telemetry messages for each device.                                        |
-| `DEVICE_PROFILE_ID`     | Profile ID used when provisioning; dashboard counts only devices on this profile.          |
-| `METRICS_HOST` / `METRICS_PORT` / `METRICS_REFRESH_MS` | Controls the Flask dashboard binding and refresh cadence. |
-| `DISABLED_DEVICES_FILE` | Optional override for the manual disable list consumed by the simulator.                   |
-| `SIM_PID_FILE`          | Optional override for the PID file used by `stop_simulation.py`.                            |
+### 3.2 Variables de entorno (`.env`)
+Copia `.env.example` a `.env` y completa los valores reales antes de iniciar cualquier flujo. Los campos mínimos son:
 
-> **Tip:** keep `.env` out of Git (already covered by `.gitignore`). Rotate credentials periodically.
+| Variable | Descripción |
+|----------|-------------|
+| `TB_URL`, `TB_USERNAME`, `TB_PASSWORD` | Endpoint REST y credenciales del tenant de ThingsBoard. |
+| `DEVICE_PREFIX`, `DEVICE_COUNT`, `DEVICE_PROFILE_ID` | Identificadores de la flota simulada. |
+| `MQTT_HOST`, `MQTT_PORT`, `MQTT_TLS`, `MQTT_TOPIC`, `MQTT_QOS` | Parámetros de conexión al broker MQTT configurado en ThingsBoard. |
+| `PUBLISH_INTERVAL_SEC`, `SIM_DURATION_SEC`, `RAMP_PERCENTAGES` | Ritmo de publicación y plan de rampas. |
+| `METRICS_HOST`, `METRICS_PORT` | Bind del dashboard Flask local (por defecto 0.0.0.0:5050). |
+| `DISABLED_DEVICES_FILE`, `SIM_PID_FILE` | Archivos de control usados para toggles y detención remota.
 
----
+> Las variables `TB_PARENT_*` son opcionales: si se completan, las herramientas de borrado replicarán la limpieza en un servidor padre (por ejemplo, ThingsBoard central) además del edge local.
 
-## 5. End-to-End Workflow
-
-### Step 1 - Optional Connectivity Check
-Validates basic REST access before provisioning.
+### 3.3 Instalación local (Python)
 ```bash
-py -3 scripts/mqtt/check_connectivity.py
-```
-- Performs a login, prints `[OK] Login exitoso`, and probes the devices list.
-- Failure here usually means wrong `TB_URL` or credentials.
+# Crear y activar entorno (opcional pero recomendado)
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
-### Step 2 - Provision or Update Devices
+# Instalar dependencias
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+Ejecuta `py -3 -m compileall scripts` tras cambios estructurales para detectar errores tempranamente.
+
+---
+
+## 4. Ejecución local
+### 4.1 Flujo completo con un solo comando
 ```bash
-py -3 "scripts/mqtt/create_devices.py"
+py -3 scripts/mqtt/run_stress_suite.py --deactivate-after --duration 120 --device-count 20
 ```
-What happens:
-1. Logs into ThingsBoard, discovers the default profile (or uses `DEVICE_PROFILE_ID`).
-2. Ensures `DEVICE_COUNT` devices named `<DEVICE_PREFIX>-NNN` exist.
-3. Writes access tokens to `data/provisioning/tokens.json`.
-4. Exports device metadata to `data/provisioning/devices.csv`.
-5. Stores context attributes (`batch`, `group`, `index`) for easier filtering inside ThingsBoard.
+El orquestador realiza las siguientes acciones:
+1. (Opcional) Aprovisiona la flota (`create_devices.py`), tomando parámetros de `.env`.
+2. Activa todos los dispositivos (`activate_devices.py --all`).
+3. Ejecuta el simulador asíncrono (`mqtt_stress_async.py`) con los argumentos provistos y cualquier parámetro adicional tras `--`.
+4. Si se indicó `--deactivate-after`, desactiva nuevamente los dispositivos para que no queden enviando telemetría.
 
-Rerun whenever you change `DEVICE_COUNT`, `DEVICE_PREFIX`, or want to rotate tokens.
-
-### Step 3 - Start the Telemetry Simulation
+### 4.2 Ejecución directa del simulador
 ```bash
-py -3 "scripts/mqtt/mqtt_stress_async.py"
+py -3 scripts/mqtt/mqtt_stress_async.py --duration 300 --device-count 200 --tokens-file data/provisioning/tokens.json
 ```
-This single command:
-1. Reads `tokens.json`, splits the fleet into shards (max `--max-clients-per-process` each), and launches async workers per shard.
-2. Connects every client to MQTT, posts snapshots to the global aggregator, and keeps telemetry flowing every `PUBLISH_INTERVAL_SEC` seconds.
-3. Starts a single Flask dashboard (default `http://localhost:5050`) that already shows the aggregated totals from all shards.
-4. Logs events per device to `data/logs/<run-id>-sXXXXX-nXXXXX-events.jsonl`.
-5. Streams metrics snapshots to `data/metrics/<run-id>-sXXXXX-nXXXXX-metrics.csv` for each shard.
-6. Writes a consolidated JSON report under `data/runs/<run-id>.json` (and refreshes `data/runs/latest.json`).
+Argumentos frecuentes:
+- `--ramp-percentages 25 50 100` para introducir la carga poco a poco.
+- `--disable-dashboard` si se ejecuta en entornos sin acceso a puertos externos.
+- `--log-dir`, `--metrics-dir` para redirigir artefactos a otra carpeta.
 
-> **Atajo:** `py -3 scripts/mqtt/run_stress_suite.py --deactivate-after` ejecuta la provision (si procede), activa la flota, lanza el simulador y desactiva todo al terminar. Anade tus parametros extra tras `--` para reenviarlos al simulador.
-Stop the simulation with `Ctrl+C`. The threads shut down gracefully, the metrics server is closed, and **devices remain in ThingsBoard** for subsequent runs.
+### 4.3 Control manual de dispositivos
+- Activar todo: `py -3 scripts/mqtt/activate_devices.py --all`
+- Desactivar dispositivos específicos: `py -3 scripts/mqtt/deactivate_devices.py --devices sim-001 sim-002`
+- Alternar con reglas personalizadas: `py -3 scripts/mqtt/toggle_devices.py --prefix laboratorio --deactivate`
 
-#### Manual Overrides
-- DetÃ©n una ejecuciÃ³n en curso sin acceder a la consola original: `py -3 scripts/mqtt/stop_simulation.py`. El script lee `data/control/mqtt_stress.pid`, envÃ­a `SIGTERM` y limpia el PID si el proceso finaliza.
-- Activa toda la flota antes de una prueba: `py -3 scripts/mqtt/activate_devices.py --all`.
-- Desactiva todo al terminar para que nada quede enviando telemetrÃ­a: `py -3 scripts/mqtt/deactivate_devices.py --all`.
-- Para operaciones selectivas (por nombre o prefijo) sigue disponible `py -3 scripts/mqtt/toggle_devices.py`, que sincroniza `data/control/disabled_devices.json` y actualiza los atributos `manual_*` en ThingsBoard. AÃ±ade `--dry-run` para validar cambios sin aplicarlos.
+Los estados se registran en `data/control/disabled_devices.json`; el simulador consulta este archivo periódicamente para pausar o reanudar dispositivos durante una corrida en curso.
 
-#### Docker Execution
-1. Construye la imagen: `docker build -t tb-load-lab .`
-2. Ejecuta una prueba completa montando la carpeta `data/` para conservar tokens, logs y reportes:
-   - Linux/macOS:
-     ```bash
-     docker run --rm --env-file .env -v "$(pwd)/data:/app/data" tb-load-lab --deactivate-after --duration 120 --device-count 20
-     ```
-   - Windows PowerShell:
-     ```powershell
-     docker run --rm --env-file .env -v "${PWD}\data:/app/data" tb-load-lab --deactivate-after --duration 120 --device-count 20
-     ```
-3. Para invocar otro script usa el mismo contenedor:
-   `docker run --rm --env-file .env -v "$(pwd)/data:/app/data" tb-load-lab python -m scripts.mqtt.deactivate_devices --all`
-> La imagen usa `python -m scripts.mqtt.run_stress_suite` como entrypoint, por lo que cualquier argumento tras el nombre de la imagen se envia al orquestador.
-
----
-
-## 6. Telemetry Payload & Device Tracking
-Each MQTT message contains:
-```json
-{
-  "timestamp": "2025-10-17T20:15:32.123Z",
-  "device": "sim-042",
-  "sequence": 128,
-  "temperature": 26.45,
-  "humidity": 55,
-  "battery": 3.81,
-  "cpu_usage_percent": 43.2,
-  "memory_usage_mb": 210.5,
-  "network_latency_ms": 82.7,
-  "status": "warn",
-  "issue": "network-latency"
-}
-```
-
-Per device, the simulator records:
-- Connection time, first publish, last publish.
-- Message counters (success/failure).
-- Disconnects with MQTT reason codes (`connection lost`, `protocol violation`, etc.).
-- Runtime exceptions with coarse root cause classification (`network`, `memory`, generic).
-
-These metrics are stored in memory during the run, surfaced via the dashboard, and persisted in `data/runs/<run-id>.json`.
-
----
-
-## 7. Real-Time Metrics Dashboard (Flask)
-When the simulation starts, browse to the metrics server:
-```
-http://<METRICS_HOST>:<METRICS_PORT>   # default http://localhost:5050
-```
-
-### Dashboard Sections
-- **Status Bar** - elapsed time, messages per second, current bandwidth (Mbps), channels in use (current connections).
-- **Connections Card** - total devices (from `.env`), current connected, peak connected, failed device count, collapse detection (time and reason).
-- **Traffic Card** - packets sent/failed, cumulative volume in MB, average messages per device, average message rate per device.
-- **Disconnect Causes Table** - top 10 reasons (aggregated from MQTT return codes and error handlers).
-- **Messages per Second Chart** - rolling line chart (last ~60 points).
-- **Bandwidth Chart** - Mbps trend, useful to spot saturation.
-- **Top Devices Table** - devices ordered by sent messages, showing failed counts per device.
-
-### Back-End Architecture
-- `MetricsCollector` (in `scripts/mqtt/send_telemetry.py`) aggregates metrics under thread locks.
-- `MetricsServer` (in `scripts/mqtt/metrics_server.py`) exposes the `/api/metrics` endpoint consumed by the dashboard and any external tooling.
-- Data refresh rate is controlled by `METRICS_REFRESH_MS` (default 2000 ms).
-
----
-
-## 8. Post-Run Analysis
-
-### Logs
-- `data/logs/<run-id>.log` - chronological events (connections, disconnections, publish results, metrics snapshots).
-  - Recommended filters: `"[ERR]"`, `"[WARN]"`, `"[MQTT]"`, `"Metrics |"`.
-
-### JSON Report
-- `data/runs/<run-id>.json` - structured summary used by scripts and dashboards.
-  - `metrics` object mirrors dashboard values (messages/sec, bandwidth, collapse detection, etc.).
-  - `devices` dictionary holds per-device metrics (timestamps, payload, disconnect history).
-- `data/runs/latest.json` is updated after every run for easy access.
-
-### CLI Summary
+### 4.4 Detener una corrida en segundo plano
+Si tienes el PID almacenado (por defecto en `data/control/mqtt_stress.pid`), puedes terminar el proceso con:
 ```bash
-py -3 scripts/report_last_run.py
+py -3 scripts/mqtt/stop_simulation.py --cleanup
 ```
-Outputs:
-- Global metrics (connections, bandwidth, messages/sec, averages, disconnect causes).
-- Devices with errors, stalled telemetry, or delayed starts.
-- First 20 devices with sent message counts and disconnect totals.
-
-Use this as a quick sanity check or to paste results into incident reports.
+Añade `--force` si necesitas enviar SIGKILL tras agotar el tiempo de espera.
 
 ---
 
-## 9. Script Reference
-| Script | Description | Typical Usage |
-|--------|-------------|----------------|
-| `scripts/mqtt/run_stress_suite.py` | Orquesta provisiÃ³n, activaciÃ³n y simulaciÃ³n en un solo comando. | Ejecuta pruebas de estrÃ©s sin lanzar scripts manualmente. |
-| `scripts/mqtt/create_devices.py` | Provisions/updates the simulated fleet; saves tokens and CSV. | Run whenever the device fleet needs to change or tokens should refresh. |
-| `scripts/mqtt/mqtt_stress_async.py` | Async orchestrator, shard manager, and global dashboard bootstrapper. | Start the load test; stop with `Ctrl+C`. |
-| `scripts/mqtt/metrics_server.py` | Flask server used internally by the orchestrator (aggregates all shards). | Imported automatically; seldom run standalone. |
-| `scripts/mqtt/report_last_run.py` | Prints a friendly summary of the latest runâ€™s JSON report. | Use after each run to capture KPIs. |
-| `scripts/mqtt/check_connectivity.py` | Simple REST smoke test (login + one-page device list). | Run before provisioning if unsure about network/credentials. |
-| `scripts/mqtt/delete_devices.py` | Deletes devices listed in `data/provisioning/devices.csv`. | Cleanup after lab sessions; also purges the parent server when `TB_PARENT_URL` is set. |
-| `scripts/mqtt/delete_by_prefix.py` | Deletes all tenant devices whose name starts with `DEVICE_PREFIX`. | Broad cleanup tool (mirrors deletions to the parent server when configured). |
-| `scripts/mqtt/activate_devices.py` | Activa dispositivos y limpia la lista local de deshabilitados. | Antes de las pruebas o para reanudar dispositivos especÃ­ficos. |
-| `scripts/mqtt/deactivate_devices.py` | Desactiva dispositivos y los marca como inactivos en ThingsBoard. | Ãšsalo al terminar sesiones para evitar envÃ­os residuales. |
-| `scripts/mqtt/toggle_devices.py` | Marks devices as manually enabled/disabled and updates the local control file. | Use for maintenance windows or to pause specific simulators. |
-| `scripts/mqtt/stop_simulation.py` | Sends a signal to stop the async simulator using the stored PID. | Run when you need to abort an ongoing test remotely. |
-| `scripts/mqtt/send_telemetry.py` | Legacy threaded simulator maintained for comparison experiments. | Optional; new tests should use `scripts/mqtt/mqtt_stress_async.py`. |
-| `scripts/mqtt/tb.py` | Lightweight ThingsBoard REST client (shared by other scripts). | Internal helper; review if extending functionality. |
+## 5. Ejecución con Docker
+### 5.1 Construcción de la imagen
+```bash
+docker build -t tb-load-lab .
+```
+> Asegúrate de que `.env` y la carpeta `data/` existan antes de construir. `.dockerignore` evita que el contexto incluya datos sensibles.
 
-VS Code users can leverage `.vscode/tasks.json` and `.vscode/launch.json` for one-click execution.
+### 5.2 Ejecutar una prueba desde la imagen
+Linux/macOS:
+```bash
+docker run --rm --env-file .env \
+  -v "$(pwd)/data:/app/data" \
+  tb-load-lab --deactivate-after --duration 120 --device-count 20
+```
+Windows PowerShell:
+```powershell
+docker run --rm --env-file .env `
+  -v "${PWD}\data:/app/data" `
+  tb-load-lab --deactivate-after --duration 120 --device-count 20
+```
+Todos los argumentos posteriores al nombre de la imagen se reenvían a `run_stress_suite.py`. Si necesitas opciones específicas del simulador, agrégalas al final, por ejemplo:
+```bash
+docker run --rm --env-file .env -v "$(pwd)/data:/app/data" \
+  tb-load-lab --deactivate-after --duration 120 --device-count 20 \
+  -- --host 192.168.2.125 --port 1883 --tokens-file data/provisioning/tokens.json
+```
 
----
-
-## 10. Customisation Scenarios
-| Scenario | Change | Files |
-|----------|--------|-------|
-| Different fleet size | Update `DEVICE_COUNT` (and optionally `DEVICE_PREFIX`). Re-run `scripts/mqtt/create_devices.py`. | `.env`, `scripts/mqtt/create_devices.py` (auto reads `.env`). |
-| Faster/slower publish rate | Modify `PUBLISH_INTERVAL_SEC`. Restart the simulator. | `.env`. |
-| TLS-enabled MQTT broker | Set `MQTT_TLS=1` and ensure certificates are trusted (see `paho-mqtt` docs). | `.env`, optionally extend `scripts/mqtt/send_telemetry.py`. |
-| Additional telemetry fields | Edit the `payload()` method in `scripts/mqtt/send_telemetry.py`. Maintain JSON-compatible values. | `scripts/mqtt/send_telemetry.py`. |
-| Alternate dashboard port | Change `METRICS_PORT` in `.env`. | `.env`. |
-| Export metrics to another system | Consume `/api/metrics` or extend `MetricsServer` to push data elsewhere (Prometheus, InfluxDB, etc.). | `scripts/mqtt/metrics_server.py`. |
-
-Always rerun `py -3 -m compileall scripts` (optional) after structural changes to catch syntax errors early.
-
----
-
-## 11. Troubleshooting & FAQ
-- **`tokens.json` missing** - Run `py -3 "scripts/mqtt/create_devices.py"` first.
-- **MQTT connection errors** - Verify broker host/port. If using TLS, check certificates and set `MQTT_TLS=1`.
-- **Dashboard not reachable** - Ensure the simulator is running, and confirm `METRICS_HOST`/`METRICS_PORT` in `.env`. Run `netstat -ano | findstr :5050` on Windows to check bindings.
-- **Pause specific devices** - Use `py -3 scripts/mqtt/toggle_devices.py --devices ...` to disable or re-enable them; the simulator reloads `data/control/disabled_devices.json` automatically.
-- **Collapse detected early** - Check `disconnect_causes` on the dashboard/report. Common reasons: broker capacity, network latency, or ThingsBoard rate limits.
-- **Need to rerun with clean state** - Use `delete_devices.py` or `delete_by_prefix.py`; both remove devices from the edge and any configured parent server before provisioning again.
-- **Scripts require proxy access** - Set `HTTP_PROXY`/`HTTPS_PROXY` environment variables before running any script.
+### 5.3 Usar docker-compose como shell
+```bash
+docker compose up --build
+```
+Esto abrirá un contenedor interactivo (comando por defecto `bash`) con el código montado en `/app`. Dentro del contenedor ejecuta los scripts igual que en la sección de ejecución local.
 
 ---
 
-## 12. Operational Checklist
-1. Populate `.env` with accurate URLs, credentials, and desired fleet parameters.
-2. Install dependencies with `py -3 -m pip install -r requirements.txt`.
-3. (Optional) Validate REST access using `check_connectivity.py`.
-4. Provision devices via `create_devices.py`.
-5. Launch the simulator (`scripts/mqtt/mqtt_stress_async.py`) and monitor the global dashboard (default http://localhost:5050).
-6. After the test, capture the CLI summary and archive the generated log + JSON report.
-7. Clean up devices only if necessary; the cleanup scripts wipe both the edge and any configured parent server.
-
-Following this checklist ensures repeatable, well-documented load tests.
-
----
-
-## 13. Contributing / Extending
-- **New telemetry scenarios** - Fork the payload generator and metrics collector.
-- **CI integration** - Wrap the scripts in container jobs or GitHub Actions to run scheduled performance tests.
-- **Alerting** - Extend `MetricsServer` to push data to monitoring stacks (Prometheus, Grafana, ELK, etc.).
-- **Visualization** - Replace the lightweight Chart.js dashboard with a front-end of choice; the `/api/metrics` endpoint is a stable contract.
-
-For collaboration, keep secrets out of version control, open pull requests with context, and add unit/integration tests if you modify REST/MQTT logic.
+## 6. Scripts destacados
+| Script | Descripción | Uso típico |
+|--------|-------------|------------|
+| `scripts/mqtt/create_devices.py` | Crea o actualiza los dispositivos simulados y sus tokens. | Ejecutar al cambiar `DEVICE_COUNT` o para refrescar tokens. |
+| `scripts/mqtt/delete_devices.py` | Elimina los dispositivos listados en `data/provisioning/devices.csv`. | Limpieza tras pruebas controladas. |
+| `scripts/mqtt/delete_by_prefix.py` | Borra todos los dispositivos de un prefijo dado. | Restablecer el entorno cuando hay colisiones en los nombres. |
+| `scripts/mqtt/report_last_run.py` | Resume `data/runs/latest.json` de forma legible. | Documentar resultados tras cada corrida. |
+| `scripts/mqtt/run_stress_suite.py` | Pipeline completo (provisión ? activación ? simulación ? desactivación). | Ejecución estándar de carga. |
+| `scripts/mqtt/stop_simulation.py` | Envía una señal al proceso del simulador leyendo el PID guardado. | Interrumpir pruebas sin acceder a la consola original. |
+| `scripts/mqtt/activate_devices.py` / `deactivate_devices.py` | Control masivo del estado de la flota. | Preparar y limpiar el entorno antes/después de cada sesión. |
+| `locustfile.py` | Cliente HTTP de ejemplo para Locust. | Lanza cargas adicionales: `locust -f locustfile.py`. |
 
 ---
 
-### Need Help?
-If you hit issues not covered here:
-- Examine `data/logs/<run-id>.log` for detailed context.
-- Compare `data/runs/<run-id>.json` with a known-good run.
-- Reach out to the platform team with logs, JSON reports, and `.env` (with sensitive fields redacted).
+## 7. Artefactos generados
+| Carpeta | Contenido |
+|---------|-----------|
+| `data/provisioning/` | `tokens.json` (mapa nombre/token) y `devices.csv` (ID, nombre, label, token). |
+| `data/logs/` | Archivos `.jsonl` con eventos por dispositivo (conexión, publicación, errores). |
+| `data/metrics/` | CSVs con snapshots periódicos (`messages_per_second`, latencias, tasas de error). |
+| `data/control/` | `disabled_devices.json` y `mqtt_stress.pid` para control manual. |
+
+Conserva esta carpeta entre corridas para reutilizar tokens y comparar resultados; cuando montes la imagen Docker, recuerda mapear `data/` como volumen.
+
+---
+
+## 8. Flujo operativo recomendado
+1. **Preparación**: actualizar `.env`, activar dispositivos necesarios.
+2. **Verificación rápida**: `py -3 scripts/mqtt/check_connectivity.py` asegura acceso REST.
+3. **Provisión (opcional)**: `py -3 scripts/mqtt/create_devices.py`.
+4. **Ejecución**: `py -3 scripts/mqtt/run_stress_suite.py --deactivate-after --duration <seg> --device-count <n>`.
+5. **Monitoreo**: abrir `http://<host-dashboard>:5050` para revisar métricas (puerto configurable).
+6. **Reporte**: `py -3 scripts/mqtt/report_last_run.py` y revisar `data/metrics/`.
+7. **Limpieza**: `py -3 scripts/mqtt/deactivate_devices.py --all` o ejecutar con `--deactivate-after`.
+
+---
+
+## 9. Solución de problemas
+- **No se generan tokens** ? Revisa `DEVICE_PROFILE_ID` y credenciales; el mensaje de error saldrá por consola.
+- **MQTT desconecta constantemente** ? Verifica certificados si `MQTT_TLS=1`, QoS seleccionado y latencia de red; revisa `disconnect_causes` en el dashboard o en los logs.
+- **Dashboard no visible** ? Confirma que el proceso está activo y que el puerto `METRICS_PORT` no está ocupado. En Windows ejecuta `netstat -ano | findstr :5050`.
+- **Docker no arranca** ? Asegúrate de que Docker Desktop esté activo y que `data/` exista en la máquina anfitriona para montarlo como volumen.
+- **Locust no encuentra el host** ? Establece la variable `TARGET_PATH` y la URL objetivo al lanzar `locust` (`locust -f locustfile.py --host http://mi-host`).
+
+---
+
+## 10. Recursos adicionales
+- [Documentación oficial de ThingsBoard](https://thingsboard.io/docs/)
+- [asyncio-mqtt](https://github.com/sbtinstruments/asyncio-mqtt)
+- [Flask](https://flask.palletsprojects.com/)
+- [Locust](https://docs.locust.io/)
+
+Para reportes o soporte interno, adjunta los archivos `data/logs/<run-id>.jsonl`, `data/metrics/<run-id>.csv`, `data/runs/<run-id>.json` y una copia depurada de `.env`.
 
 Happy load testing!
