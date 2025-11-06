@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Ejecuta el flujo completo de prueba de carga MQTT."""
 from __future__ import annotations
 
@@ -27,8 +27,8 @@ def run_python(script: Path, extra_args: List[str] | None = None) -> None:
 def parse_args() -> tuple[argparse.Namespace, List[str]]:
     parser = argparse.ArgumentParser(
         description=(
-            "Orquesta la provisión, activación y ejecución del simulador MQTT. "
-            "Cualquier argumento adicional será reenviado a mqtt_stress_async.py."
+            "Orquesta la provisi├│n, activaci├│n y ejecuci├│n del simulador MQTT. "
+            "Cualquier argumento adicional ser├í reenviado a mqtt_stress_async.py."
         ),
         add_help=True,
     )
@@ -50,7 +50,7 @@ def parse_args() -> tuple[argparse.Namespace, List[str]]:
     parser.add_argument(
         "--duration",
         type=float,
-        help="Sobrescribe el tiempo de ejecución en segundos para mqtt_stress_async.py.",
+        help="Sobrescribe el tiempo de ejecuci├│n en segundos para mqtt_stress_async.py.",
     )
     parser.add_argument(
         "--device-count",
@@ -60,7 +60,7 @@ def parse_args() -> tuple[argparse.Namespace, List[str]]:
     parser.add_argument(
         "--interval",
         type=float,
-        help="Sobrescribe el intervalo de publicación (segundos).",
+        help="Sobrescribe el intervalo de publicaci├│n (segundos).",
     )
     parser.add_argument(
         "--log-dir",
@@ -70,7 +70,7 @@ def parse_args() -> tuple[argparse.Namespace, List[str]]:
     parser.add_argument(
         "--metrics-dir",
         type=Path,
-        help="Directorio personalizado para las métricas CSV del simulador.",
+        help="Directorio personalizado para las m├®tricas CSV del simulador.",
     )
     parser.add_argument(
         "--ramp-percentages",

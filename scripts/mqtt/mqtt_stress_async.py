@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Async MQTT stress simulator for ThingsBoard."""
 from __future__ import annotations
 
@@ -132,7 +132,7 @@ class DeviceToggleRegistry:
         return set(self._disabled)
 
 
-# Paho MQTT >=2.0 eliminó `message_retry_set`, pero asyncio-mqtt todavía lo invoca.
+# Paho MQTT >=2.0 elimin├│ `message_retry_set`, pero asyncio-mqtt todav├¡a lo invoca.
 # Registramos un stub compatible para evitar AttributeError.
 if not hasattr(paho_client.Client, "message_retry_set"):
     def _message_retry_set(self: paho_client.Client, _retry: float) -> None:
@@ -433,7 +433,7 @@ class AggregatorClient:
                 async with self._session.post(self.endpoint, json=payload, timeout=5):
                     pass
             except Exception as exc:  # noqa: BLE001
-                print(f"[WARN] No se pudo reportar métricas al agregador ({exc}).", file=sys.stderr)
+                print(f"[WARN] No se pudo reportar m├®tricas al agregador ({exc}).", file=sys.stderr)
 
 
 class DeviceWorker:
@@ -666,7 +666,7 @@ class DeviceWorker:
 
 def load_tokens_from_file(path: Path) -> List[DeviceToken]:
     if not path.exists():
-        raise FileNotFoundError(f"No se encontró el archivo de tokens: {path}")
+        raise FileNotFoundError(f"No se encontr├│ el archivo de tokens: {path}")
     data = json.loads(path.read_text(encoding="utf-8"))
     tokens: List[DeviceToken] = []
     if isinstance(data, dict):
@@ -696,10 +696,10 @@ def select_devices(
     if start_id < 0:
         raise ValueError("--start-id no puede ser negativo.")
     if start_id >= len(tokens):
-        raise ValueError("start-id está fuera del rango de tokens disponibles.")
+        raise ValueError("start-id est├í fuera del rango de tokens disponibles.")
     total_to_take = override_count or device_count or (len(tokens) - start_id)
     if total_to_take <= 0:
-        raise ValueError("El número de dispositivos debe ser mayor a cero.")
+        raise ValueError("El n├║mero de dispositivos debe ser mayor a cero.")
     end_index = start_id + total_to_take
     if end_index > len(tokens):
         raise ValueError("No hay suficientes tokens para cubrir el rango solicitado.")
@@ -715,7 +715,7 @@ def parse_ramp(ramp_values: Optional[Sequence[int]], total_devices: int) -> List
     if any(later < earlier for earlier, later in zip(ramp_sequence, ramp_sequence[1:])):
         raise ValueError("La rampa debe ser una secuencia no decreciente.")
     if ramp_sequence[-1] > total_devices:
-        raise ValueError("El último valor de la rampa no puede exceder el total de dispositivos.")
+        raise ValueError("El ├║ltimo valor de la rampa no puede exceder el total de dispositivos.")
     if ramp_sequence[-1] < total_devices:
         ramp_sequence.append(total_devices)
     return ramp_sequence
@@ -734,7 +734,7 @@ def parse_ramp_percentages(values: Optional[Sequence[str]], total_devices: int) 
         try:
             number = float(text)
         except ValueError as exc:
-            raise ValueError(f"Valor de porcentaje inválido: {raw}") from exc
+            raise ValueError(f"Valor de porcentaje inv├ílido: {raw}") from exc
         if number <= 0:
             raise ValueError("Los porcentajes deben ser mayores que 0.")
         if number <= 1:
@@ -781,7 +781,7 @@ def prepare_selected_devices(args: argparse.Namespace) -> List[DeviceToken]:
         override_count=args.count,
     )
     if not selected_devices:
-        raise SystemExit("No se seleccionaron dispositivos para la simulación.")
+        raise SystemExit("No se seleccionaron dispositivos para la simulaci├│n.")
     return selected_devices
 
 
@@ -790,7 +790,7 @@ def configure_signal_handlers(stop_event: asyncio.Event) -> None:
 
     def _set_event_from_signal(sig: int) -> None:
         if not stop_event.is_set():
-            print(f"Signal {signal.Signals(sig).name} recibido, deteniendo simulación...", file=sys.stderr)
+            print(f"Signal {signal.Signals(sig).name} recibido, deteniendo simulaci├│n...", file=sys.stderr)
             stop_event.set()
 
     for sig in (signal.SIGINT, getattr(signal, "SIGTERM", None)):
@@ -864,7 +864,7 @@ async def run_simulation(args: argparse.Namespace) -> None:
     if args.ramp and args.ramp_percentages:
         raise SystemExit("Usa --ramp o --ramp-percentages, pero no ambos al mismo tiempo.")
     if not args.disable_dashboard and args.metrics_refresh <= 0:
-        raise SystemExit("--metrics-refresh debe ser mayor a 0 cuando el dashboard está habilitado.")
+        raise SystemExit("--metrics-refresh debe ser mayor a 0 cuando el dashboard est├í habilitado.")
 
     selected_devices = prepare_selected_devices(args)
     ramp_counts_input = [int(value) for value in args.ramp] if args.ramp else None
@@ -879,7 +879,7 @@ async def run_simulation(args: argparse.Namespace) -> None:
         preview = ", ".join(sorted_names[:10])
         remainder = len(sorted_names) - 10
         if remainder > 0:
-            preview += f", ... (+{remainder} más)"
+            preview += f", ... (+{remainder} m├ís)"
         print(
             f"[INFO] {len(sorted_names)} dispositivo(s) deshabilitado(s) manualmente: {preview}",
             file=sys.stderr,
@@ -942,7 +942,7 @@ async def run_simulation(args: argparse.Namespace) -> None:
             )
             print(f"Dashboard disponible en http://{host_label}:{args.metrics_port}")
         except Exception as exc:  # noqa: BLE001
-            print(f"No se pudo iniciar el dashboard de métricas: {exc}", file=sys.stderr)
+            print(f"No se pudo iniciar el dashboard de m├®tricas: {exc}", file=sys.stderr)
             metrics_server = None
 
     stop_event = asyncio.Event()
@@ -953,7 +953,7 @@ async def run_simulation(args: argparse.Namespace) -> None:
             return
         await asyncio.sleep(args.duration)
         if not stop_event.is_set():
-            print("Tiempo máximo alcanzado, deteniendo simulación...", file=sys.stderr)
+            print("Tiempo m├íximo alcanzado, deteniendo simulaci├│n...", file=sys.stderr)
             stop_event.set()
 
     duration_task = asyncio.create_task(_stop_after_duration())
@@ -1032,12 +1032,12 @@ async def run_simulation(args: argparse.Namespace) -> None:
     if metrics_server is not None:
         metrics_server.stop()
     print(f"Eventos guardados en {json_log_path}")
-    print(f"Métricas guardadas en {csv_log_path}")
+    print(f"M├®tricas guardadas en {csv_log_path}")
 
 
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Simulador de estrés MQTT asincrónico para ThingsBoard."
+        description="Simulador de estr├®s MQTT asincr├│nico para ThingsBoard."
     )
     parser.add_argument("--host", default=ENV_MQTT_HOST, help="Host del broker MQTT.")
     parser.add_argument("--port", type=int, default=ENV_MQTT_PORT, help="Puerto del broker MQTT.")
@@ -1051,7 +1051,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--interval",
         type=float,
         default=ENV_INTERVAL,
-        help="Intervalo de publicación de telemetría (segundos).",
+        help="Intervalo de publicaci├│n de telemetr├¡a (segundos).",
     )
     parser.add_argument(
         "--tokens-file",
@@ -1063,7 +1063,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--token-prefix",
         type=str,
         default=None,
-        help="Prefijo para generar tokens sintéticos cuando no hay archivo JSON.",
+        help="Prefijo para generar tokens sint├®ticos cuando no hay archivo JSON.",
     )
     parser.add_argument(
         "--ramp",
@@ -1088,38 +1088,38 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--duration",
         type=float,
         default=ENV_DURATION,
-        help="Tiempo total de prueba en segundos (0 para infinito hasta interrupción).",
+        help="Tiempo total de prueba en segundos (0 para infinito hasta interrupci├│n).",
     )
     parser.add_argument(
         "--start-id",
         type=int,
         default=0,
-        help="Offset inicial para seleccionar tokens (para ejecutar múltiples instancias).",
+        help="Offset inicial para seleccionar tokens (para ejecutar m├║ltiples instancias).",
     )
     parser.add_argument(
         "--count",
         type=int,
         default=None,
-        help="Cantidad de dispositivos a tomar desde start-id (distribución de carga).",
+        help="Cantidad de dispositivos a tomar desde start-id (distribuci├│n de carga).",
     )
     parser.add_argument(
         "--topic",
         type=str,
         default=ENV_TOPIC,
-        help="Tópico MQTT donde se publica la telemetría.",
+        help="T├│pico MQTT donde se publica la telemetr├¡a.",
     )
     parser.add_argument(
         "--qos",
         type=int,
         choices=[0, 1, 2],
         default=ENV_QOS,
-        help="QoS usado para la publicación MQTT.",
+        help="QoS usado para la publicaci├│n MQTT.",
     )
     parser.add_argument(
         "--report-interval",
         type=float,
         default=ENV_REPORT_INTERVAL,
-        help="Segundos entre reportes periódicos por consola.",
+        help="Segundos entre reportes peri├│dicos por consola.",
     )
     parser.add_argument(
         "--log-dir",
@@ -1131,7 +1131,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--metrics-dir",
         type=Path,
         default=METRICS_DIR,
-        help="Directorio donde guardar métricas en CSV.",
+        help="Directorio donde guardar m├®tricas en CSV.",
     )
     parser.add_argument(
         "--disabled-devices-file",
@@ -1143,7 +1143,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--pid-file",
         type=Path,
         default=Path(ENV_PID_FILE) if ENV_PID_FILE else DEFAULT_PID_FILE,
-        help="Archivo donde guardar el PID del orquestador para poder detenerlo fácilmente.",
+        help="Archivo donde guardar el PID del orquestador para poder detenerlo f├ícilmente.",
     )
     parser.add_argument(
         "--backoff-base",
@@ -1155,19 +1155,19 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         "--backoff-max",
         type=float,
         default=30.0,
-        help="Tiempo máximo de backoff para reconexiones (segundos).",
+        help="Tiempo m├íximo de backoff para reconexiones (segundos).",
     )
     parser.add_argument(
         "--metrics-host",
         type=str,
         default=ENV_METRICS_HOST,
-        help="Host para exponer el dashboard Flask de métricas.",
+        help="Host para exponer el dashboard Flask de m├®tricas.",
     )
     parser.add_argument(
         "--metrics-port",
         type=int,
         default=ENV_METRICS_PORT,
-        help="Puerto para el dashboard Flask de métricas.",
+        help="Puerto para el dashboard Flask de m├®tricas.",
     )
     parser.add_argument(
         "--metrics-refresh",
@@ -1178,13 +1178,13 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--disable-dashboard",
         action="store_true",
-        help="Desactiva el dashboard Flask de métricas.",
+        help="Desactiva el dashboard Flask de m├®tricas.",
     )
     parser.add_argument(
         "--max-clients-per-process",
         type=int,
         default=400,
-        help="Máximo de clientes por proceso antes de dividir en múltiples procesos (Windows).",
+        help="M├íximo de clientes por proceso antes de dividir en m├║ltiples procesos (Windows).",
     )
     parser.add_argument(
         "--worker",
@@ -1218,7 +1218,7 @@ async def _async_main(args: argparse.Namespace) -> None:
     try:
         await run_simulation(args)
     except KeyboardInterrupt:
-        print("Interrupción recibida, terminando simulación...", file=sys.stderr)
+        print("Interrupci├│n recibida, terminando simulaci├│n...", file=sys.stderr)
 
 
 def run_worker(args: argparse.Namespace) -> None:
@@ -1230,7 +1230,7 @@ def run_worker(args: argparse.Namespace) -> None:
     try:
         asyncio.run(_async_main(args))
     except KeyboardInterrupt:
-        print("Simulación interrumpida.", file=sys.stderr)
+        print("Simulaci├│n interrumpida.", file=sys.stderr)
 
 
 def orchestrate(args: argparse.Namespace) -> None:
@@ -1254,7 +1254,7 @@ def orchestrate(args: argparse.Namespace) -> None:
     global_summary: Optional[Dict[str, Any]] = None
 
     print(
-        f"Dividiendo la simulación en procesos de hasta {max_per_process} clientes "
+        f"Dividiendo la simulaci├│n en procesos de hasta {max_per_process} clientes "
         f"(total={total_devices})."
     )
 
@@ -1345,7 +1345,7 @@ def orchestrate(args: argparse.Namespace) -> None:
             exit_codes.append(code)
             if code != 0:
                 print(
-                    f"[WARN] Shard {shard_index + 1} finalizó con código {code}.",
+                    f"[WARN] Shard {shard_index + 1} finaliz├│ con c├│digo {code}.",
                     file=sys.stderr,
                 )
 
@@ -1369,9 +1369,9 @@ def orchestrate(args: argparse.Namespace) -> None:
             )
 
         if any(code != 0 for code in exit_codes):
-            raise SystemExit("Al menos un shard terminó con errores. Revisa los registros.")
+            raise SystemExit("Al menos un shard termin├│ con errores. Revisa los registros.")
     except KeyboardInterrupt:
-        print("Interrupción recibida, deteniendo shards...", file=sys.stderr)
+        print("Interrupci├│n recibida, deteniendo shards...", file=sys.stderr)
         for _, proc in processes:
             proc.terminate()
         raise
