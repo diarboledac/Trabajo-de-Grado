@@ -4,6 +4,12 @@ Repositorio para ejecutar pruebas de esfuerzo reproducibles sobre un tenant de T
 
 > ⚠️ **Sincronización obligatoria**: siempre que se actualice este README, se debe reflejar el mismo cambio (contexto, métricas, procedimientos o lecciones aprendidas) en `doc/DocumentoGrado.tex`. El documento académico es la entrega principal y debe permanecer alineado con la documentación técnica.
 
+## Autor y contacto
+- **Autor:** Diego Alejandro Arboleda Cuero
+- **Programa:** Ingeniería Electrónica
+- **Universidad:** Universidad Nacional de Colombia (Sede Manizales)
+- **Correo:** diarboledac@unal.edu.co
+
 ---
 
 ## 1. Componentes principales
@@ -44,7 +50,7 @@ docker-compose.yml          # Shell interactiva sobre la imagen construida
 data/
   provisioning/             # tokens.json + devices.csv (ignorados en Git)
   logs/                     # Logs en formato JSONL por corrida
-  metrics/                  # Snapshots CSV por shard/corrida
+  metrics/                  # Snapshots CSV por shard/corrida y reportes LaTeX
   control/                  # Archivos de control (PID, dispositivos deshabilitados)
 ```
 Todo lo que viva en `data/` queda fuera del repositorio (`.gitignore`) y puede montarse como volumen dentro de contenedores para conservar tokens, logs y reportes.
@@ -121,6 +127,11 @@ Si tienes el PID almacenado (por defecto en `data/control/mqtt_stress.pid`), pue
 py -3 scripts/mqtt/stop_simulation.py --cleanup
 ```
 Añade `--force` si necesitas enviar SIGKILL tras agotar el tiempo de espera.
+
+### 4.5 Reportes automáticos (LaTeX)
+- Cada corrida del simulador asíncrono genera un CSV en `data/metrics` y, adicionalmente, un reporte LaTeX + gráfico en `data/metrics/reports/SESSION-*`.
+- El `.tex` incluye tabla con dispositivos, mensajes, latencias, tasa, ancho de banda, volumen y duración, listo para compilar con `pdflatex` o `latexmk` e incorporarlo al Documento de Grado.
+- El PNG (`SESSION-overview.png`) resume mensajes/s, Mbps y latencia promedio para adjuntar como figura.
 
 ---
 

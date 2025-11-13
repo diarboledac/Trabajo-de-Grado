@@ -26,7 +26,7 @@ PAGE_SIZE = 200
 def fail(msg: str, code: int = 1) -> None:
     print(msg, file=sys.stderr)
     raise SystemExit(code)
-
+    
 
 def configured_clients() -> List[Tuple[str, TB]]:
     if not TB_URL or not TB_USERNAME or not TB_PASSWORD:

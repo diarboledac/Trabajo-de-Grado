@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from statistics import fmean
 from time import perf_counter
-from typing import Any, Dict, List, Optional, Sequence, Set
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import aiofiles
 import aiohttp
@@ -32,12 +32,23 @@ from dotenv import load_dotenv
 
 from metrics_server import MetricsServer, GlobalMetricsCollector
 
+try:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.dates as mdates
+    import matplotlib.pyplot as plt
+except Exception:  # noqa: BLE001
+    plt = None  # type: ignore[assignment]
+    mdates = None  # type: ignore[assignment]
+
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data"
 DEFAULT_TOKENS_FILE = DATA_DIR / "provisioning" / "tokens.json"
 LOGS_DIR = DATA_DIR / "logs"
 METRICS_DIR = DATA_DIR / "metrics"
+REPORTS_DIR = METRICS_DIR / "reports"
 CONTROL_DIR = DATA_DIR / "control"
 DEFAULT_TOPIC = "v1/devices/me/telemetry"
 DEFAULT_DISABLED_FILE = CONTROL_DIR / "disabled_devices.json"
@@ -400,6 +411,186 @@ class AsyncCsvLogger:
         await self._queue.put(None)
         if self._task is not None:
             await self._task
+
+
+def latex_escape(text: str) -> str:
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "_": r"\_",
+        "%": r"\%",
+        "&": r"\&",
+        "$": r"\$",
+        "#": r"\#",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+    }
+    escaped = text
+    for old, new in replacements.items():
+        escaped = escaped.replace(old, new)
+    return escaped
+
+
+def _series_from_records(
+    records: List[Tuple[datetime, Optional[float], Optional[float], Optional[float]]],
+    index: int,
+) -> Tuple[List[datetime], List[float]]:
+    xs: List[datetime] = []
+    ys: List[float] = []
+    for entry in records:
+        ts = entry[0]
+        value = entry[index]
+        if value is None:
+            continue
+        xs.append(ts)
+        ys.append(float(value))
+    return xs, ys
+
+
+def _load_timeseries(csv_path: Path) -> List[Tuple[datetime, Optional[float], Optional[float], Optional[float]]]:
+    if not csv_path.exists():
+        return []
+    records: List[Tuple[datetime, Optional[float], Optional[float], Optional[float]]] = []
+    with csv_path.open(encoding="utf-8") as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            ts_raw = row.get("timestamp")
+            if not ts_raw:
+                continue
+            try:
+                ts = datetime.fromisoformat(ts_raw)
+            except ValueError:
+                continue
+
+            def parse_float(field: str) -> Optional[float]:
+                raw = row.get(field)
+                if raw in (None, ""):
+                    return None
+                try:
+                    return float(raw)
+                except ValueError:
+                    return None
+
+            records.append(
+                (
+                    ts,
+                    parse_float("messages_per_second"),
+                    parse_float("bandwidth_mbps"),
+                    parse_float("avg_latency_ms"),
+                )
+            )
+    return records
+
+
+def _format_number(value: Any, digits: int = 3, suffix: str = "") -> str:
+    if value in (None, ""):
+        return "N/A"
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return latex_escape(str(value))
+    if abs(number) >= 1000 or (0 < abs(number) < 0.01):
+        formatted = f"{number:.{digits}g}"
+    else:
+        formatted = f"{number:.{digits}f}"
+    return f"{formatted}{suffix}"
+
+
+def generate_latex_report(
+    session_id: str,
+    csv_path: Path,
+    summary: Dict[str, Any],
+) -> Optional[Path]:
+    reports_dir = REPORTS_DIR
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    records = _load_timeseries(csv_path)
+    chart_path: Optional[Path] = None
+
+    if plt is not None and records:
+        chart_path = reports_dir / f"{session_id}-overview.png"
+        xs_rate, ys_rate = _series_from_records(records, 1)
+        xs_bw, ys_bw = _series_from_records(records, 2)
+        xs_lat, ys_lat = _series_from_records(records, 3)
+        fig, axes = plt.subplots(3, 1, figsize=(9, 7), sharex=True)
+        fig.suptitle(f"Evolución de métricas - {session_id}")
+        if xs_rate:
+            axes[0].plot(xs_rate, ys_rate, label="msg/s")
+            axes[0].set_ylabel("Mensajes/s")
+        else:
+            axes[0].text(0.5, 0.5, "Sin datos de msg/s", ha="center", va="center")
+        axes[0].grid(True, alpha=0.3)
+        if xs_bw:
+            axes[1].plot(xs_bw, ys_bw, color="#ff7f0e", label="Mbps")
+            axes[1].set_ylabel("Mbps")
+        else:
+            axes[1].text(0.5, 0.5, "Sin datos de ancho de banda", ha="center", va="center")
+        axes[1].grid(True, alpha=0.3)
+        if xs_lat:
+            axes[2].plot(xs_lat, ys_lat, color="#2ca02c", label="Latencia")
+            axes[2].set_ylabel("Latencia (ms)")
+        else:
+            axes[2].text(0.5, 0.5, "Sin datos de latencia", ha="center", va="center")
+        axes[2].grid(True, alpha=0.3)
+        axes[2].set_xlabel("Tiempo")
+        if mdates is not None:
+            axes[2].xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))
+        fig.autofmt_xdate()
+        fig.tight_layout(rect=[0, 0.03, 1, 0.97])
+        fig.savefig(chart_path, dpi=160, bbox_inches="tight")
+        plt.close(fig)
+
+    csv_relpath = os.path.relpath(csv_path, reports_dir)
+    table_data = [
+        ("Sesión", session_id),
+        ("CSV", csv_relpath),
+        ("Dispositivos", summary.get("total_devices")),
+        ("Publicaciones OK", summary.get("successful_publishes")),
+        ("Publicaciones fallidas", summary.get("failed_publishes")),
+        ("Latencia promedio (ms)", summary.get("avg_latency_ms")),
+        ("Latencia P95 (ms)", summary.get("p95_latency_ms")),
+        ("Mensajes por segundo", summary.get("messages_per_second")),
+        ("Ancho de banda (Mbps)", summary.get("bandwidth_mbps")),
+        ("Volumen de datos (MB)", summary.get("data_volume_mb")),
+        ("Duración (s)", summary.get("uptime_seconds")),
+    ]
+
+    table_lines = ["\\begin{tabular}{ll}", "\\toprule"]
+    for label, value in table_data:
+        table_lines.append(f"{latex_escape(label)} & {_format_number(value)} \\ ")
+    table_lines.extend(["\\bottomrule", "\\end{tabular}"])
+
+    chart_block = ""
+    if chart_path is not None:
+        chart_block = (
+            "\\subsection*{Gráficos}\n"
+            "\\begin{figure}[h]\n\\centering\n"
+            f"\\includegraphics[width=0.9\\linewidth]{{{latex_escape(chart_path.name)}}}\n"
+            "\\caption{Mensajes/s, ancho de banda y latencia promedio.}\n"
+            "\\end{figure}\n"
+        )
+
+    tex_content = f"""\\documentclass{{article}}
+\\usepackage[margin=1in]{{geometry}}
+\\usepackage{{booktabs}}
+\\usepackage{{graphicx}}
+\\title{{Reporte de carga MQTT}}
+\\author{{Autogenerado por mqtt\_stress\_async.py}}
+\\date{{}}
+\\begin{{document}}
+\\maketitle
+\\section*{{Resumen de la corrida}}
+{''.join(table_lines)}
+{chart_block}
+\\subsection*{{Fuente de datos}}
+El CSV original se encuentra en \\texttt{{{latex_escape(csv_relpath)}}}.\\\\
+Este documento se genera automáticamente tras cada corrida.\\
+\\end{{document}}
+"""
+
+    tex_path = reports_dir / f"{session_id}-report.tex"
+    tex_path.write_text(tex_content, encoding="utf-8")
+    return tex_path
 
 
 class AggregatorClient:
@@ -1033,6 +1224,15 @@ async def run_simulation(args: argparse.Namespace) -> None:
         metrics_server.stop()
     print(f"Eventos guardados en {json_log_path}")
     print(f"M├®tricas guardadas en {csv_log_path}")
+    try:
+        summary = metrics.summary()
+        report_path = generate_latex_report(session_id, csv_log_path, summary)
+        if report_path is not None:
+            print(f"Reporte LaTeX guardado en {report_path}")
+        elif plt is None:
+            print("[INFO] matplotlib no esta disponible; reporte LaTeX omitido.")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[WARN] No se pudo generar el reporte LaTeX: {exc}", file=sys.stderr)
 
 
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:

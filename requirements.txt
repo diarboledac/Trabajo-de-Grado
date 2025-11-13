@@ -6,6 +6,7 @@ asyncio-mqtt>=0.16
 aiofiles>=23.2
 aiodns>=3.2
 aiohttp>=3.9
+matplotlib>=3.8
 # Añade aquí las dependencias de tu proyecto, por ejemplo:
 # fastapi==0.95.0
 # uvicorn[standard]==0.21.1
