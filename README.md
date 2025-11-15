@@ -78,6 +78,13 @@ Copia `.env.example` a `.env` y completa los valores reales antes de iniciar cua
 | `METRICS_HOST`, `METRICS_PORT` | Bind del dashboard Flask local (por defecto 0.0.0.0:5050). |
 | `DISABLED_DEVICES_FILE`, `SIM_PID_FILE` | Archivos de control usados para toggles y detención remota.
 
+> **Nota:** El archivo `.env` guarda credenciales reales y parámetros de pruebas locales. Es solo para tu máquina y nunca debe subirse al control de versiones (ya está listado en `.gitignore`).
+
+### Diseño del experimento
+- **Pregunta guía:** determinar hasta qué punto ThingsBoard y la red hollow cumplen las métricas de QoS (latencia, disponibilidad y entrega garantizada) cuando aumenta la telemetría simulada.
+- **Métricas observadas:** throughput, latencia promedio/p95/p99, tasas de error, desconexiones, pérdidas de mensajes y uso de recursos del servidor.
+- **Evidencia generada:** cada corrida produce logs JSONL, métricas en CSV y reportes estructurados (LaTeX + gráficos) dentro de `data/`, lo que permite analizar y comparar escenarios posteriores.
+
 > Las variables `TB_PARENT_*` son opcionales: si se completan, las herramientas de borrado replicarán la limpieza en un servidor padre (por ejemplo, ThingsBoard central) además del edge local.
 
 ### 3.3 Instalación local (Python)
@@ -133,9 +140,21 @@ Añade `--force` si necesitas enviar SIGKILL tras agotar el tiempo de espera.
 - El `.tex` incluye tabla con dispositivos, mensajes, latencias, tasa, ancho de banda, volumen y duración, listo para compilar con `pdflatex` o `latexmk` e incorporarlo al Documento de Grado.
 - El PNG (`SESSION-overview.png`) resume mensajes/s, Mbps y latencia promedio para adjuntar como figura.
 
+### 4.6 Ejemplo rápido (demo)
+- Ejecuta `make run-demo` para lanzar una demostración corta: verifica conectividad, aprovisiona 5 dispositivos y corre el simulador durante 30 segundos con desactivación automática al final.
+- Antes de ejecutarlo, asegúrate de haber completado `.env` y de tener acceso al broker/tenant configurado.
+
+### 4.7 Resultados recientes (5 000 dispositivos)
+- La corrida `async-run-20251113-233810` alcanzó 5 000 dispositivos simulados (intervalo previsto de 1 s) y generó 888 606 publicaciones totales; el 0,32 % falló antes de llegar al servidor.
+- El throughput agregado se estabilizó en ≈2 842 msg/s (≈3,61 Mbps), pero sólo el 71 % de los clientes permaneció conectado y 1 919 dispositivos finalizaron marcados como fallidos.
+- Las latencias se degradaron considerablemente: promedio ponderado ≈524 ms, p95 ≈3,33 s y p99 >5,3 s, lo que evidencia saturación del broker y de la red HaLow en este nivel de carga.
+
 ---
 
 ## 5. Ejecución con Docker
+### Ejecución con Docker
+- Construye la imagen localmente con `docker compose build` (o `docker build -t tb-load-lab .`).
+- Lanza el servicio con `docker compose up tb-load-lab` para ejecutar el flujo por defecto del simulador; la carpeta `./data` queda montada para conservar tokens, logs y métricas.
 ### 5.1 Construcción de la imagen
 ```bash
 docker build -t tb-load-lab .

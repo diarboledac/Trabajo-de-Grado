@@ -24,7 +24,7 @@
   captionpos=b
 }
 
-\title{Evaluaci\'on del Desempe\~no de ThingsBoard sobre una Red Hollow de Telemetr\'ia IoT}
+\title{Evaluaci\'on del Desempe\~no de ThingsBoard sobre una Red HaLow de Telemetr\'ia IoT}
 
 \author{%
 \IEEEauthorblockN{Diego Alejandro Arboleda Cuero}%
@@ -46,22 +46,22 @@ Correo: juanbgomezm@unal.edu.co}%
 \maketitle
 
 \begin{abstract}
-\textbf{Resumen---} Este trabajo eval\'ua el desempe\~no y la estabilidad de un servidor ThingsBoard desplegado sobre una red hollow dise\~nada para aislar el tr\'afico de telemetr\'ia IoT. Se describe la arquitectura de generaci\'on de carga, basada en scripts asincr\'onos en Python que orquestan la provisi\'on, activaci\'on y publicaci\'on de dispositivos simulados mediante MQTT. Las corridas se ejecutaron en escenarios de hasta \num{500} clientes concurrentes, midiendo throughput, latencia extremo a extremo, porcentaje de fallas y uso de CPU, memoria y disco del servidor. Los datos recolectados se almacenan en \texttt{data/metrics/} como CSV y en \texttt{data/logs/} como JSONL, lo que permiti\'o reconstruir la evoluci\'on temporal de cada prueba y alimentar gr\'aficos comparativos sin depender de herramientas externas. Los resultados muestran que el servidor mantiene latencias promedio inferiores a \SI{5}{\milli\second} y un throughput sostenido de \num{20} mensajes/s para cargas de hasta \num{20} clientes, y que puede sostener \num{200} clientes con promedios inferiores a \SI{15}{\milli\second}. Al aumentar la concurrencia a \num{400} clientes aparecen colas de publicaci\'on con latencias cercanas a \SI{180}{\milli\second} cuando el broker comparte recursos con la base de datos. Una versi\'on ajustada, con aislamiento de vCPU y prioridad a las colas MQTT, permite escalar a \num{500} clientes manteniendo la latencia por debajo de \SI{10}{\milli\second}. El estudio documenta los l\'imites antes de la degradaci\'on, propone estrategias de mitigaci\'on y deja automatizado el procesamiento de informes reproducibles.
+\textbf{Resumen---} Este trabajo eval\'ua el desempe\~no y la estabilidad de un servidor ThingsBoard desplegado sobre una red HaLow dise\~nada para aislar el tr\'afico de telemetr\'ia IoT. Se describe la arquitectura de generaci\'on de carga, basada en scripts asincr\'onos en Python que orquestan la provisi\'on, activaci\'on y publicaci\'on de dispositivos simulados mediante MQTT. Las corridas se ejecutaron en escenarios de hasta \num{500} clientes concurrentes, midiendo throughput, latencia extremo a extremo, porcentaje de fallas y uso de CPU, memoria y disco del servidor. Los datos recolectados se almacenan en \texttt{data/metrics/} como CSV y en \texttt{data/logs/} como JSONL, lo que permiti\'o reconstruir la evoluci\'on temporal de cada prueba y alimentar gr\'aficos comparativos sin depender de herramientas externas. Los resultados muestran que el servidor mantiene latencias promedio inferiores a \SI{5}{\milli\second} y un throughput sostenido de \num{20} mensajes/s para cargas de hasta \num{20} clientes, y que puede sostener \num{200} clientes con promedios inferiores a \SI{15}{\milli\second}. Al aumentar la concurrencia a \num{400} clientes aparecen colas de publicaci\'on con latencias cercanas a \SI{180}{\milli\second} cuando el broker comparte recursos con la base de datos. Una versi\'on ajustada, con aislamiento de vCPU y prioridad a las colas MQTT, permite escalar a \num{500} clientes manteniendo la latencia por debajo de \SI{10}{\milli\second}. El estudio documenta los l\'imites antes de la degradaci\'on, propone estrategias de mitigaci\'on y deja automatizado el procesamiento de informes reproducibles.
 \end{abstract}
 
 \begin{otherlanguage}{english}
 \begin{abstract}
-\textbf{Abstract---} This thesis reports the performance and stability assessment of a ThingsBoard server deployed on a custom hollow network that isolates IoT telemetry traffic. The load generation pipeline relies on asynchronous Python scripts to provision, activate, and publish simulated devices over MQTT. Test campaigns with up to 500 concurrent clients measured throughput, end-to-end latency, error rates, and resource consumption on the server. Metrics were stored as CSV files under \texttt{data/metrics/} and JSONL streams under \texttt{data/logs/}, enabling reproducible analyses without third-party dashboards. The platform sustained average latencies below \SI{5}{\milli\second} and \num{20} msg/s with 20 clients, and handled 200 clients while keeping averages under \SI{15}{\milli\second}. Increasing concurrency to 400 clients caused backlog formation and latencies near \SI{180}{\milli\second} when the MQTT broker shared resources with the database. After isolating vCPUs and prioritising MQTT queues the system scaled to 500 clients with latencies below \SI{10}{\milli\second}. The study documents the limits before degradation, proposes mitigation strategies, and automates the generation of reproducible reports.
+\textbf{Abstract---} This thesis reports the performance and stability assessment of a ThingsBoard server deployed on a custom HaLow network that isolates IoT telemetry traffic. The load generation pipeline relies on asynchronous Python scripts to provision, activate, and publish simulated devices over MQTT. Test campaigns with up to 500 concurrent clients measured throughput, end-to-end latency, error rates, and resource consumption on the server. Metrics were stored as CSV files under \texttt{data/metrics/} and JSONL streams under \texttt{data/logs/}, enabling reproducible analyses without third-party dashboards. The platform sustained average latencies below \SI{5}{\milli\second} and \num{20} msg/s with 20 clients, and handled 200 clients while keeping averages under \SI{15}{\milli\second}. Increasing concurrency to 400 clients caused backlog formation and latencies near \SI{180}{\milli\second} when the MQTT broker shared resources with the database. After isolating vCPUs and prioritising MQTT queues the system scaled to 500 clients with latencies below \SI{10}{\milli\second}. The study documents the limits before degradation, proposes mitigation strategies, and automates the generation of reproducible reports.
 \end{abstract}
 \end{otherlanguage}
 
 \begin{IEEEkeywords}
-ThingsBoard; Internet de las Cosas; MQTT; pruebas de carga; redes hollow; telemetr\'ia.
+ThingsBoard; Internet de las Cosas; MQTT; pruebas de carga; redes HaLow; telemetr\'ia.
 \end{IEEEkeywords}
 
 \begin{otherlanguage}{english}
 \begin{IEEEkeywords}
-ThingsBoard; Internet of Things; MQTT; load testing; hollow networks; telemetry.
+ThingsBoard; Internet of Things; MQTT; load testing; HaLow networks; telemetry.
 \end{IEEEkeywords}
 \end{otherlanguage}
 
@@ -72,20 +72,25 @@ ThingsBoard; Internet of Things; MQTT; load testing; hollow networks; telemetry.
 \section{Introducci\'on}
 La consolidaci\'on de plataformas de gesti\'on IoT ha impulsado la adopci\'on de arquitecturas de telemetr\'ia que requieren operar bajo cargas crecientes y entornos adversos. ThingsBoard, una soluci\'on de c\'odigo abierto para integraci\'on de dispositivos, procesamiento de eventos y visualizaci\'on, ofrece microservicios que deben dimensionarse de acuerdo con la demanda de dispositivos y la latencia tolerable por las aplicaciones \cite{thingsboard-docs}. Evaluar esos l\'imites es fundamental cuando el despliegue atiende sensores cr\'iticos o infraestructura industrial.
 
-En este proyecto se dise\~n\'o una red hollow que separa l\'ogicamente el segmento de telemetr\'ia de otros servicios, permitiendo inyectar retardos, p\'erdidas y jitter controlado para reproducir escenarios de campo. Sobre esta topolog\'ia se ejecutaron scripts propios que generan carga MQTT y recopilan m\'etricas en caliente, aprovechando la automatizaci\'on incluida en el repositorio.
+En este proyecto se dise\~n\'o una red HaLow que separa l\'ogicamente el segmento de telemetr\'ia de otros servicios, permitiendo inyectar retardos, p\'erdidas y jitter controlado para reproducir escenarios de campo. Sobre esta topolog\'ia se ejecutaron scripts propios que generan carga MQTT y recopilan m\'etricas en caliente, aprovechando la automatizaci\'on incluida en el repositorio.
 
 El documento presenta el marco conceptual, los objetivos y la metodolog\'ia utilizada para caracterizar el comportamiento del servidor ThingsBoard bajo distintas intensidades de tr\'afico. Asimismo, resume los resultados cuantitativos, discute las implicaciones operativas y establece recomendaciones para futuras mejoras.
 
-\section{Objetivos}
+\section{Planteamiento del problema}
+ThingsBoard se posiciona como una plataforma IoT vers\'atil, pero su desempe\~no real depende de la topolog\'ia de red, de la configuraci\'on de brokers MQTT y de la forma en que evoluciona la carga de telemetr\'ia. La organizaci\'on dispone de una red HaLow que permite aislar el tr\'afico y degradar enlaces de forma controlada, pero carec\'ia de evidencia cuantitativa sobre cu\'antas conexiones simult\'aneas puede sostener el servidor antes de incumplir los indicadores de calidad de servicio (QoS) negociados con los usuarios finales.
+
+El problema se traduce en responder preguntas como: \textit{¿a partir de cu\'antos dispositivos concurrentes la latencia media supera el umbral de \SI{10}{\milli\second}? ¿Qu\'e combinaciones de intervalo de publicaci\'on y rampas generan p\'erdidas o errores MQTT? ¿C\'omo inciden las variaciones de la red HaLow en la estabilidad de ThingsBoard?} Sin un laboratorio reproducible era imposible comparar escenarios o justificar inversiones en hardware/virtualizaci\'on. Este trabajo propone un banco de pruebas que automatiza la generaci\'on de telemetr\'ia y el registro de evidencias para delimitar la regi\'on de operaci\'on segura del servidor.
+
+\section{Objetivo general y objetivos espec\'ificos}
 \subsection{Objetivo general}
-Verificar la capacidad de funcionamiento del servidor ThingsBoard al ser sometido a tr\'afico generado en una red hollow dise\~nada; determinar los l\'imites de carga antes de degradaci\'on o fallo.
+Cuantificar la capacidad del servidor ThingsBoard desplegado en la red HaLow institucional, identificando los l\'imites de carga que garantizan los compromisos de QoS (latencia, disponibilidad y entrega de mensajes) y documentando las condiciones bajo las cuales el sistema se degrada.
 
 \subsection{Objetivos espec\'ificos}
 \begin{enumerate}
-  \item Dise\~nar y documentar el escenario experimental (topolog\'ia hollow, par\'ametros de red).
-  \item Implementar generadores de tr\'afico y scripts de monitorizaci\'on.
-  \item Medir throughput, latencia, p\'erdida y uso de recursos del servidor bajo distintas cargas.
-  \item Evaluar el punto de fallo y proponer estrategias de mejora.
+  \item Levantar un escenario experimental reproducible que combine la red HaLow, los scripts de generaci\'on de carga y los mecanismos de observabilidad.
+  \item Implementar flujos automatizados de provisi\'on, activaci\'on y publicaci\'on MQTT que permitan barridos de dispositivos, intervalos y rampas.
+  \item Registrar y analizar indicadores clave: throughput instant\'aneo y acumulado, latencia promedio/p95/p99, tasas de errores y uso de recursos del servidor.
+  \item Establecer el punto de colapso y proponer acciones de mitigaci\'on (aislamiento de recursos, ajustes de rampa, afinidad de vCPU, etc.).
 \end{enumerate}
 
 \section{Marco te\'orico y trabajos relacionados}
@@ -93,13 +98,13 @@ ThingsBoard integra un backend orientado a microservicios, soporta m\'ultiples p
 
 MQTT es el protocolo elegido para las pruebas por su ligereza y por el soporte nativo que la plataforma brinda a la versi\'on 3.1.1 \cite{oasis-mqtt311}. El modelo publish/subscribe, junto con la selecci\'on de niveles de QoS, permite emular dispositivos que publican telemetr\'ia r\'apida y confiable en escenarios donde el ancho de banda no es uniforme.
 
-El concepto de red hollow se fundamenta en la separaci\'on de planos de datos mediante virtualizaci\'on y emulaci\'on de enlaces de transporte. Herramientas como NetEm facilitan la inserci\'on de retardos, jitter y p\'erdida controlada en interfaces virtuales \cite{hemminger2005netem}, mientras que entornos ligeros como Mininet simplifican la orquestaci\'on de topolog\'ias SDN reproducibles \cite{lantz2010network}. Estas aproximaciones permiten estudiar la robustez del servidor ThingsBoard sin replicar f\'isicamente la red de campo.
+El concepto de red HaLow se fundamenta en la separaci\'on de planos de datos mediante virtualizaci\'on y emulaci\'on de enlaces de transporte. Herramientas como NetEm facilitan la inserci\'on de retardos, jitter y p\'erdida controlada en interfaces virtuales \cite{hemminger2005netem}, mientras que entornos ligeros como Mininet simplifican la orquestaci\'on de topolog\'ias SDN reproducibles \cite{lantz2010network}. Estas aproximaciones permiten estudiar la robustez del servidor ThingsBoard sin replicar f\'isicamente la red de campo.
 
-\section{Metodolog\'ia}
-La metodolog\'ia combina infraestructura virtualizada, scripts de automatizaci\'on y almacenamiento estructurado de resultados. Se diferenciaron tres componentes: generador de carga, red hollow y servidor ThingsBoard.
+\section{Metodolog\'ia experimental}
+La metodolog\'ia combina infraestructura virtualizada, scripts de automatizaci\'on y almacenamiento estructurado de resultados. Cada corrida del laboratorio sigue un flujo orquestado: (i) preparaci\'on de la red HaLow y del broker, (ii) aprovisionamiento de dispositivos simulados, (iii) publicaciones controladas con rampas parametrizables y (iv) captura de evidencias (logs JSONL, CSV de m\'etricas y reportes LaTeX). De este modo se garantiza la repetibilidad y la trazabilidad entre las entradas y salidas del experimento.
 
 \subsection{Arquitectura de referencia}
-El entorno se compuso de dos nodos principales: uno dedicado a ThingsBoard y otro al generador de carga. Ambos se interconectan a trav\'es de un switch virtual donde se aplican las reglas de la red hollow. El inventario se resume en la \Cref{tab:hardware}.
+El entorno se compuso de dos nodos principales: uno dedicado a ThingsBoard y otro al generador de carga. Ambos se interconectan a trav\'es de un switch virtual donde se aplican las reglas de la red HaLow. El inventario se resume en la \Cref{tab:hardware}.
 
 \begin{table}[!t]
 \centering
@@ -111,22 +116,24 @@ Componente & Especificaci\'on \\
 \midrule
 Nodo ThingsBoard & M\'aquina virtual KVM (8 vCPU, 16 GiB RAM, SSD NVMe compartido) \\
 Generador de carga & Servidor f\'isico con 12 vCPU l\'ogicos, 32 GiB RAM y NIC \SI{10}{\giga\bit\per\second} \\
-Aislador hollow & Bridge Linux dedicado a modelar retardos y p\'erdidas con \texttt{tc netem} \\
+Aislador HaLow & Bridge Linux dedicado a modelar retardos y p\'erdidas con \texttt{tc netem} \\
 Almacenamiento & Volumen NFS para \texttt{data/} (logs y m\'etricas persistentes) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Red hollow y emulaci\'on}
-La red hollow se implement\'o empleando namespaces de Linux y reglas de \texttt{tc}, inyectando un retardo base de \SI{12}{\milli\second}, jitter de \SI{3}{\milli\second} y una p\'erdida objetivo de \SI{0.1}{\percent}. Esta configuraci\'on reproduce enlaces de acceso con calidad intermedia y permite estudiar la capacidad de ThingsBoard para absorber variaciones. Los par\'ametros se versionaron en archivos YAML internos para facilitar su reproducci\'on y se documentaron en el repositorio.
+\subsection{Red HaLow y emulaci\'on}
+
+La red HaLow se implement\'o empleando namespaces de Linux y reglas de \texttt{tc}, inyectando un retardo base de \SI{12}{\milli\second}, jitter de \SI{3}{\milli\second} y una p\'erdida objetivo de \SI{0.1}{\percent}. Esta configuraci\'on reproduce enlaces de acceso con calidad intermedia y permite estudiar la capacidad de ThingsBoard para absorber variaciones. Los par\'ametros se versionaron en archivos YAML internos para facilitar su reproducci\'on y se documentaron en el repositorio.
 
 \subsection{Instrumentaci\'on y registro}
+
 La automatizaci\'on reside en \texttt{scripts/mqtt/}, donde destaca \texttt{mqtt\_stress\_async.py}, construido sobre \texttt{asyncio-mqtt} \cite{asyncio-mqtt}. El orquestador \texttt{run\_stress\_suite.py} encapsula la provisi\'on de dispositivos, la activaci\'on y la publicaci\'on masiva, mientras que \texttt{metrics\_server.py} expone un panel Flask para visualizar la carga en tiempo real. Para comparaciones puntuales se conserva adem\'as un escenario HTTP con Locust \cite{locust-docs}, el cual permite contrastar la respuesta de ThingsBoard ante protocolos alternos.
 
-Las m\'etricas se almacenan en \texttt{data/metrics/} (CSV) y los eventos detallados en \texttt{data/logs/} (JSONL). No se incluye una carpeta \texttt{results/} predefinida; las gr\'aficas se generan durante la compilaci\'on o pueden exportarse manualmente a \texttt{figs/} cuando se requiera documentaci\'on externa. Durante cada corrida se conserva un archivo resumen en \texttt{data/runs/latest.json}, consumido por \texttt{report\_last\_run.py} para producir informes textuales.
+Las m\'etricas se almacenan en \texttt{data/metrics/} (CSV) y los eventos detallados en \texttt{data/logs/} (JSONL). Adem\'as, cada sesi\'on genera reportes estructurados en LaTeX y gr\'aficos PNG dentro de \texttt{data/metrics/reports/}, lo que facilita el an\'alisis comparativo sin depender de paneles externos. Durante cada corrida se conserva un archivo resumen en \texttt{data/runs/latest.json}, consumido por \texttt{report\_last\_run.py} para producir informes textuales.
 
 \subsection{Versionamiento de software}
-Las dependencias se definen en \texttt{requirements.txt} y se ejecutan sobre la imagen \texttt{python:3.11-slim}. La \Cref{tab:software} resume las versiones clave.
+Las dependencias se definen en \texttt{requirements.txt} y se instalan sobre la imagen base \texttt{python:3.11-slim}; el contenedor resultante replica el entorno empleado en las pruebas locales. La \Cref{tab:software} resume las versiones clave que condicionan la reproducibilidad del laboratorio.
 
 \begin{table}[!t]
 \centering
@@ -147,9 +154,8 @@ Locust & 2.23 (para comparaciones HTTP opcionales) \\
 \end{tabular}
 \end{table}
 
-\section{Experimentos y configuraci\'on}
 \subsection{Procedimiento experimental}
-Cada sesi\'on inicia con la preparaci\'on de credenciales en \texttt{.env} y la ejecuci\'on de \texttt{create\_devices.py}. Posteriormente se lanza el orquestador con los par\'ametros mostrados en el \Cref{lst:launcher}. Los dispositivos simulados publican JSON con telemetr\'ia y se desconectan de forma controlada al finalizar la ventana definida por \texttt{SIM\_DURATION\_SEC}.
+Cada sesi\'on inicia con la preparaci\'on de credenciales en \texttt{.env} y la ejecuci\'on de \texttt{create\_devices.py}. Posteriormente se lanza el orquestador con los par\'ametros mostrados en el \Cref{lst:launcher}. Los dispositivos simulados publican JSON con telemetr\'ia y se desconectan de forma controlada al finalizar la ventana definida por \texttt{SIM\_DURATION\_SEC}. El flujo est\'andar concluye con la desactivaci\'on de los dispositivos para dejar el tenant en estado limpio.
 
 \begin{lstlisting}[caption={Ejecuci\'on reproducible del escenario de carga},label={lst:launcher}]
 $ python scripts/mqtt/run_stress_suite.py \
@@ -170,7 +176,7 @@ Los par\'ametros de la conexi\'on MQTT y del ritmo de publicaci\'on se consolida
 \toprule
 Par\'ametro & Valor de referencia \\
 \midrule
-\texttt{MQTT\_HOST} & \texttt{localhost} (tunnel VLAN hollow) \\
+\texttt{MQTT\_HOST} & \texttt{localhost} (t\'unel VLAN de la red HaLow) \\
 \texttt{MQTT\_PORT} & 1883 (1884 con TLS) \\
 \texttt{MQTT\_QOS} & 1 (entrega garantizada) \\
 \texttt{PUBLISH\_INTERVAL\_SEC} & \SI{1}{\second} por dispositivo \\
@@ -180,17 +186,19 @@ Par\'ametro & Valor de referencia \\
 \end{tabular}
 \end{table}
 
-\subsection{M\'etricas recolectadas}
-Durante cada prueba se capturaron: (i) promedio, p95 y p99 de latencia MQTT; (ii) throughput instant\'aneo y acumulado; (iii) conexiones activas y abandonos; (iv) uso de CPU, memoria y disco mediante \texttt{docker stats}; y (v) eventos de error por dispositivo. El panel expuesto por \texttt{metrics\_server.py} guarda snapshots cada \SI{30}{\second} en CSV, permitiendo reconstruir la serie temporal en herramientas externas.
+\subsection{Par\'ametros y m\'etricas observadas}
+Durante cada prueba se capturaron: (i) promedio, p95 y p99 de latencia MQTT; (ii) throughput instant\'aneo y acumulado; (iii) conexiones activas y abandonos; (iv) uso de CPU, memoria y disco mediante \texttt{docker stats}; y (v) eventos de error por dispositivo. Estos datos se cruzan con los snapshots de red (retardo, jitter y p\'erdida configurados) para interpretar los resultados, y el panel expuesto por \texttt{metrics\_server.py} guarda muestras cada \SI{30}{\second} en CSV para reconstruir las series temporales en herramientas externas.
 
 \section{Resultados}
-La \Cref{tab:resumen-cargas} resume cinco corridas representativas. Las dos primeras corresponden a escenarios de baja y media carga; las restantes replican condiciones de saturaci\'on y un escenario optimizado tras aislar los recursos del broker.
+Los resultados se consolidaron a partir de los CSV generados por cada corrida, los reportes LaTeX autom\'aticos y los eventos JSONL que describen el comportamiento de cada dispositivo. Con este material se construyen tablas comparativas, gr\'aficos de tendencia y res\'umenes narrativos que permiten contrastar escenarios de baja, media y alta carga.
+
+La \Cref{tab:resumen-cargas} resume seis corridas representativas. Las dos primeras corresponden a escenarios de baja y media carga; las siguientes exploran condiciones de saturaci\'on progresiva y un escenario optimizado tras aislar los recursos del broker, y la fila correspondiente a 1000 clientes recoge la corrida intermedia con intervalo de \SI{5}{\second}.
 
 \begin{table}[!t]
 \centering
 \caption{Resumen de corridas experimentales seleccionadas}
 \label{tab:resumen-cargas}
-\begin{tabular}{@{}l S[table-format=3.0] S[table-format=6.2] S[table-format=6.0] S[table-format=3.2] S[table-format=3.2]@{}}
+\begin{tabular}{@{}l S[table-format=5.0] S[table-format=6.2] S[table-format=6.0] S[table-format=3.2] S[table-format=3.2]@{}}
 \toprule
 Identificador & {Clientes} & {Duraci\'on (\si{\second})} & {Mensajes} & {Lat. prom. (\si{\milli\second})} & {Throughput (msg/s)} \\
 \midrule
@@ -199,6 +207,7 @@ Identificador & {Clientes} & {Duraci\'on (\si{\second})} & {Mensajes} & {Lat. pr
 20251029-231641 & 400 & 120.16 & 46164 & 23.01 & 372.75 \\
 20251029-232925 & 400 & 120.10 & 36443 & 184.47 & 322.23 \\
 20251022-221137 & 500 & 600.08 & 297581 & 7.22 & 494.86 \\
+20251115-170057 & 1000 & 600.09 & 120000 & 7.97 & 199.97 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -212,10 +221,10 @@ La \Cref{fig:latencia-promedio} grafica la evoluci\'on del promedio de latencia 
   width=\linewidth,
   height=0.58\linewidth,
   xmin=0,
-  xmax=520,
+  xmax=1000,
   xlabel={Clientes concurrentes},
   ylabel={Latencia promedio (\si{\milli\second})},
-  xtick={0,100,200,300,400,500},
+  xtick={0,200,400,600,800,1000},
   ytick={0,50,100,150,200},
   ymin=0,
   ymax=200,
@@ -223,14 +232,14 @@ La \Cref{fig:latencia-promedio} grafica la evoluci\'on del promedio de latencia 
   legend style={at={(0.5,1.25)},anchor=south,legend columns=2},
   legend cell align=left
 ]
-\addplot[color=blue,mark=*] coordinates {(20,3.03)(100,4.39)(200,13.62)(400,60.24)(500,5.97)};
+\addplot[color=blue,mark=*] coordinates {(20,3.03)(100,4.39)(200,13.62)(400,60.24)(500,5.97)(1000,7.97)};
 \addlegendentry{Latencia promedio}
 \end{axis}
 \begin{axis}[
   width=\linewidth,
   height=0.58\linewidth,
   xmin=0,
-  xmax=520,
+  xmax=1000,
   axis y line*=right,
   axis x line=none,
   ylabel={Throughput promedio (msg/s)},
@@ -240,7 +249,7 @@ La \Cref{fig:latencia-promedio} grafica la evoluci\'on del promedio de latencia 
   legend style={at={(0.5,1.12)},anchor=south,legend columns=2},
   legend cell align=left
 ]
-\addplot[color=orange,mark=square*] coordinates {(20,19.99)(100,13.16)(200,115.80)(400,371.85)(500,272.43)};
+\addplot[color=orange,mark=square*] coordinates {(20,19.99)(100,13.16)(200,115.80)(400,371.85)(500,272.43)(1000,199.97)};
 \addlegendentry{Throughput promedio}
 \end{axis}
 \end{tikzpicture}
@@ -248,21 +257,26 @@ La \Cref{fig:latencia-promedio} grafica la evoluci\'on del promedio de latencia 
 \label{fig:latencia-promedio}
 \end{figure}
 
+Para completar el barrido, se ejecut\'o la sesi\'on `async-run-20251115-170057` con \num{1000} dispositivos y un intervalo de publicaci\'on de \SI{5}{\second}, durante unos \SI{600}{\second}. En total se generaron 120\,000 publicaciones exitosas (sin mensajes fallidos), lo que equivale a un promedio de \num{120} mensajes por dispositivo y una tasa agregada cercana a \num{200}~msg/s, con un ancho de banda total de aproximadamente \SI{0.25}{\mega\bit\per\second}. La latencia promedio ponderada se mantuvo en torno a \SI{8}{\milli\second}, con p95 inferiores a \SI{23}{\milli\second} y p99 por debajo de \SI{63}{\milli\second}. Todos los clientes permanecieron conectados durante la ventana de prueba, lo que indica que el servidor ThingsBoard y la red HaLow pueden sostener este nivel de carga sin degradaci\'on apreciable de QoS.
+
 \section{Discusi\'on}
 El escenario de \num{20} clientes refleja el comportamiento de referencia: latencias inferiores a \SI{3}{\milli\second} y ausencia de errores. Al escalar a \num{200} clientes las latencias promedio se mantienen por debajo de \SI{5}{\milli\second}, pero el throughput medio cae a \num{15.62} msg/s por efecto de la limitaci\'on en el intervalo de publicaci\'on y la rampa configurada. Este comportamiento sugiere que la primera restricci\'on es de aplicaci\'on y no de infraestructura.
 
 La saturaci\'on se observa con \num{400} clientes cuando el broker comparte CPU con PostgreSQL. Las colas se acumulan y la latencia supera los \SI{180}{\milli\second}, aunque el throughput promedio se mantiene por encima de \num{320} msg/s. Tras aislar l\'ogicamente el broker y asignar afinidad de vCPU, el escenario de \num{500} clientes recupera latencias inferiores a \SI{10}{\milli\second} con un throughput cercano a \num{495} msg/s, lo que evidencia que la degradaci\'on anterior era consecuencia de la contenci\'on de recursos.
 
-Las p\'erdidas se mantuvieron por debajo del \SI{0.1}{\percent} configurado en la red hollow. No se detectaron errores de autenticaci\'on ni desconexiones forzadas, y los logs JSONL confirman que la mayor\'ia de reconexiones se originaron por expiraci\'on intencional tras cada fase de rampa.
+La corrida intermedia `async-run-20251115-170057`, con \num{1000} dispositivos publicando cada \SI{5}{\second}, confirm\'o que el sistema puede escalar sin comprometer la QoS: se mantuvieron todos los clientes conectados, sin p\'erdida de mensajes, con una latencia promedio \textasciitilde\SI{8}{\milli\second} y p95 por debajo de \SI{23}{\milli\second}. En contraste, la sesi\'on de estr\'es `async-run-20251113-233810` con \num{5000} dispositivos s\'olo logr\'o conservar en promedio a \num{284} clientes conectados por shard (\num{3400} efectivos), elev\'o la latencia media hasta \SI{523}{\milli\second} y registr\'o un \SI{0.32}{\percent} de publicaciones fallidas. Aunque el throughput agregado lleg\'o a \num{2842}~msg/s, la relaci\'on mensajes/dispositivo cay\'o a \num{177}, mostrando que la plataforma entra en modo de autodefensa mucho antes de alcanzar el objetivo te\'orico de 5~msg/s por dispositivo.
 
-\section{Conclusiones}
-El estudio demuestra que ThingsBoard, en la configuraci\'on analizada, soporta cargas medias sin comprometer la latencia siempre que el broker disponga de recursos dedicados. La red hollow permiti\'o reproducir condiciones de campo y evidenciar que la contenci\'on entre broker y base de datos es el principal factor de degradaci\'on a partir de \num{400} clientes.
+Las p\'erdidas se mantuvieron por debajo del \SI{0.1}{\percent} configurado en la red HaLow para escenarios de hasta \num{500} clientes, y tambi\'en fueron nulas en la corrida de \num{1000} dispositivos. No se detectaron errores de autenticaci\'on ni desconexiones forzadas en esas corridas, y los logs JSONL confirman que la mayor\'ia de reconexiones se originaron por expiraci\'on intencional tras cada fase de rampa.
+
+\section{Conclusiones y trabajo futuro}
+\subsection{Conclusiones}
+El estudio demuestra que ThingsBoard, en la configuraci\'on analizada, soporta cargas medias sin comprometer la latencia siempre que el broker disponga de recursos dedicados. La red HaLow permiti\'o reproducir condiciones de campo y evidenciar que la contenci\'on entre broker y base de datos es el principal factor de degradaci\'on a partir de \num{400} clientes.
 
 La automatizaci\'on contenida en \texttt{scripts/mqtt/} acelera la generaci\'on de evidencia cuantitativa y facilita la trazabilidad entre m\'etricas y logs. Las mediciones sirven como l\'imites de referencia para planear escalamiento horizontal, segmentar la red o aplicar balanceo de carga sobre el broker.
 
-\section{Trabajo futuro}
+\subsection{Trabajo futuro}
 \begin{enumerate}
-  \item Extender la red hollow con perfiles de movilidad y variabilidad diurna para estudiar latencias no estacionarias.
+  \item Extender la red HaLow con perfiles de movilidad y variabilidad diurna para estudiar latencias no estacionarias.
   \item Integrar un pipeline de an\'alisis que genere dashboards en tiempo real a partir de \texttt{data/metrics/}.
   \item Evaluar protocolos alternos (HTTP, CoAP) mediante los endpoints ya expuestos por ThingsBoard.
   \item Automatizar pruebas de resiliencia ante fallos parciales, incluyendo reinicios del broker y ca\'ida del almacenamiento.
@@ -283,7 +297,7 @@ import csv
 from statistics import mean
 
 ROOT = Path("data/metrics")
-clients_of_interest = {20, 100, 200, 400, 500}
+clients_of_interest = {20, 100, 200, 400, 500, 1000}
 latency = {}
 throughput = {}
 

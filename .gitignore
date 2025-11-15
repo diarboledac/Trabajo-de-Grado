@@ -8,6 +8,7 @@ data/control/
 *.log
 
 # Docker / local env
+# Credenciales locales, no subir al repositorio
 .env
 .dockerignore
 docker-compose.override.yml
