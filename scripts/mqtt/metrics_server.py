@@ -2,7 +2,13 @@
 """Flask dashboard for ThingsBoard telemetry simulator metrics."""
 from __future__ import annotations
 
+import os
+import signal
+import subprocess
+import sys
 import threading
+import time
+from pathlib import Path
 from typing import Any, Optional
 
 from flask import Flask, jsonify, render_template_string, request
@@ -31,6 +37,18 @@ DASHBOARD_TEMPLATE = """
     .chart-container { background: #1b2533; border-radius: 8px; padding: 1rem; margin-top: 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); }
     .chart-container canvas { width: 100% !important; max-height: 320px; }
     footer { margin-top: 2rem; font-size: 0.75rem; color: #9ca6b4; }
+    .control-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; }
+    .control-grid label { display: flex; flex-direction: column; font-size: 0.9rem; color: #c3ccd8; gap: 0.25rem; }
+    .control-grid input, .control-grid select { padding: 0.4rem 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); background: #111827; color: #f2f4f8; }
+    .actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+    .btn { border: none; border-radius: 6px; padding: 0.5rem 0.9rem; font-weight: 600; cursor: pointer; }
+    .btn.primary { background: #4fd1c5; color: #0b1724; }
+    .btn.secondary { background: #2d3748; color: #f2f4f8; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .small { font-size: 0.85rem; color: #9ca6b4; }
+    .message { margin-top: 0.4rem; min-height: 1.2rem; font-size: 0.9rem; }
+    .message.error { color: #fc8181; }
+    .message.ok { color: #4fd1c5; }
   </style>
 </head>
 <body>
@@ -41,6 +59,30 @@ DASHBOARD_TEMPLATE = """
     <span>Bandwidth (Mbps): <strong id="bandwidth">--</strong></span>
     <span>Channels in use: <strong id="channels">--</strong></span>
     <span>Success rate: <strong id="success-pill" class="pill">--</strong></span>
+  </div>
+
+  <div class="card">
+    <h2>Simulation control</h2>
+    <div class="control-grid">
+      <label>Devices<input type="number" id="input-devices" min="1" step="1" placeholder="e.g. 1000" /></label>
+      <label>Duration (s)<input type="number" id="input-duration" min="1" step="1" placeholder="e.g. 120" /></label>
+      <label>Interval (s)<input type="number" id="input-interval" min="0.1" step="0.1" placeholder="e.g. 3" /></label>
+      <label>QoS
+        <select id="input-qos">
+          <option value="">--</option>
+          <option value="0">0</option>
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+        </select>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="btn-start" onclick="startRun()">Start</button>
+      <button class="btn secondary" id="btn-stop" onclick="stopRun()">Stop</button>
+      <span class="small" id="run-meta"></span>
+    </div>
+    <div id="run-status" class="small">Status: --</div>
+    <div id="run-message" class="message"></div>
   </div>
 
   <div class="grid">
@@ -118,6 +160,7 @@ DASHBOARD_TEMPLATE = """
 
   <script>
     const refreshInterval = {{ refresh_interval }};
+    const runStatusInterval = 5000;
     const messagesCtx = document.getElementById('messagesChart').getContext('2d');
     const bandwidthCtx = document.getElementById('bandwidthChart').getContext('2d');
     const latencyCtx = document.getElementById('latencyChart').getContext('2d');
@@ -177,6 +220,64 @@ DASHBOARD_TEMPLATE = """
       }
     }
 
+    async function fetchRunStatus() {
+      try {
+        const response = await fetch('/api/run/status');
+        if (!response.ok) throw new Error('Status response not ok');
+        const payload = await response.json();
+        updateRunStatus(payload);
+      } catch (err) {
+        console.error('Run status fetch failed:', err);
+      }
+    }
+
+    async function startRun() {
+      setRunMessage('', false);
+      const devices = document.getElementById('input-devices').value;
+      const duration = document.getElementById('input-duration').value;
+      const interval = document.getElementById('input-interval').value;
+      const qos = document.getElementById('input-qos').value;
+      const body = {};
+      if (devices) body.device_count = Number(devices);
+      if (duration) body.duration = Number(duration);
+      if (interval) body.interval = Number(interval);
+      if (qos) body.qos = Number(qos);
+      try {
+        const response = await fetch('/api/run/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          setRunMessage(payload.error || 'No se pudo iniciar la simulacion', true);
+        } else {
+          setRunMessage('Simulacion iniciada', false);
+          updateRunStatus(payload);
+        }
+      } catch (err) {
+        console.error('Run start failed:', err);
+        setRunMessage('Error al iniciar la simulacion', true);
+      }
+    }
+
+    async function stopRun() {
+      setRunMessage('', false);
+      try {
+        const response = await fetch('/api/run/stop', { method: 'POST' });
+        const payload = await response.json();
+        if (!response.ok) {
+          setRunMessage(payload.error || 'No se pudo detener la simulacion', true);
+        } else {
+          setRunMessage('Simulacion detenida', false);
+          updateRunStatus(payload);
+        }
+      } catch (err) {
+        console.error('Run stop failed:', err);
+        setRunMessage('Error al detener la simulacion', true);
+      }
+    }
+
     function updateDashboard(data) {
       const metrics = data.metrics || {};
       const elapsedSeconds = metrics.elapsed_seconds ?? 0;
@@ -223,6 +324,31 @@ DASHBOARD_TEMPLATE = """
       pushChartPoint(messagesChart, metrics.messages_per_second ?? 0);
       pushChartPoint(bandwidthChart, bandwidth);
       pushLatencyPoint(latencyChart, metrics);
+    }
+
+    function updateRunStatus(data) {
+      const statusEl = document.getElementById('run-status');
+      const metaEl = document.getElementById('run-meta');
+      const startBtn = document.getElementById('btn-start');
+      const stopBtn = document.getElementById('btn-stop');
+      const running = data.running === true;
+      statusEl.innerText = `Status: ${running ? 'running' : 'idle'}${data.pid ? ' (PID ' + data.pid + ')' : ''}`;
+      const startedAt = data.started_at ? new Date(data.started_at * 1000).toLocaleTimeString() : '--';
+      metaEl.innerText = running ? `Started: ${startedAt}` : '';
+      startBtn.disabled = running;
+      stopBtn.disabled = !running;
+      if (data.last_error) {
+        setRunMessage(data.last_error, true);
+      }
+    }
+
+    function setRunMessage(msg, isError) {
+      const el = document.getElementById('run-message');
+      el.innerText = msg || '';
+      el.classList.remove('ok', 'error');
+      if (msg) {
+        el.classList.add(isError ? 'error' : 'ok');
+      }
     }
 
     function updateTable(tableId, data, headers) {
@@ -282,11 +408,122 @@ DASHBOARD_TEMPLATE = """
     }
 
     fetchMetrics();
+    fetchRunStatus();
     setInterval(fetchMetrics, refreshInterval);
+    setInterval(fetchRunStatus, runStatusInterval);
   </script>
 </body>
 </html>
 """
+
+DEFAULT_SIM_SCRIPT = Path(__file__).resolve().parent / "mqtt_stress_async.py"
+
+
+def _to_int(value: Any) -> Optional[int]:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _to_float(value: Any) -> Optional[float]:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+class SimulationController:
+    """Simple orchestrator to start/stop the MQTT stress script."""
+
+    def __init__(self, script_path: Path = DEFAULT_SIM_SCRIPT, python_executable: str | None = None) -> None:
+        self.script_path = script_path
+        self.python = python_executable or sys.executable
+        self.process: Optional[subprocess.Popen] = None
+        self.started_at: Optional[float] = None
+        self.last_args: dict[str, Any] = {}
+        self.last_error: Optional[str] = None
+
+    def running(self) -> bool:
+        return self.process is not None and self.process.poll() is None
+
+    def status(self) -> dict[str, Any]:
+        return {
+            "running": self.running(),
+            "pid": self.process.pid if self.process and self.running() else None,
+            "started_at": self.started_at,
+            "last_args": self.last_args,
+            "last_error": self.last_error,
+            "return_code": self.process.poll() if self.process else None,
+        }
+
+    def start(
+        self,
+        *,
+        device_count: Optional[int],
+        duration: Optional[float],
+        interval: Optional[float],
+        qos: Optional[int],
+    ) -> dict[str, Any]:
+        if self.running():
+            return {"error": "Simulation already running", **self.status()}
+        if not self.script_path.exists():
+            return {"error": f"Script not found: {self.script_path}"}
+
+        cmd = [self.python, str(self.script_path)]
+        if device_count is not None:
+            if device_count <= 0:
+                return {"error": "device_count debe ser > 0"}
+            cmd.extend(["--device-count", str(device_count)])
+        if duration is not None:
+            if duration <= 0:
+                return {"error": "duration debe ser > 0"}
+            cmd.extend(["--duration", str(duration)])
+        if interval is not None:
+            if interval <= 0:
+                return {"error": "interval debe ser > 0"}
+            cmd.extend(["--interval", str(interval)])
+        if qos is not None:
+            if qos not in (0, 1, 2):
+                return {"error": "qos debe ser 0, 1 o 2"}
+            cmd.extend(["--qos", str(qos)])
+
+        env = os.environ.copy()
+        try:
+            self.process = subprocess.Popen(cmd, env=env)
+            self.started_at = time.time()
+            self.last_args = {
+                "device_count": device_count,
+                "duration": duration,
+                "interval": interval,
+                "qos": qos,
+            }
+            self.last_error = None
+        except Exception as exc:  # noqa: BLE001
+            self.process = None
+            self.started_at = None
+            self.last_error = str(exc)
+            return {"error": str(exc)}
+        return self.status()
+
+    def stop(self) -> dict[str, Any]:
+        if not self.running():
+            return {**self.status(), "error": "No hay simulacion en ejecucion"}
+        assert self.process is not None
+        try:
+            if os.name == "nt":
+                self.process.terminate()
+            else:
+                self.process.send_signal(signal.SIGTERM)
+            self.process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+        except Exception as exc:  # noqa: BLE001
+            self.last_error = str(exc)
+            return {"error": str(exc), **self.status()}
+        status = self.status()
+        self.process = None
+        return status
 
 
 class GlobalMetricsCollector:
@@ -505,6 +742,7 @@ class MetricsServer:
         self.port = port
         self.refresh_interval_ms = refresh_interval_ms
         self.profile_id = profile_id or "N/A"
+        self.sim_controller = SimulationController()
         self._app = Flask(__name__)
         self._server = None
         self._thread: Optional[threading.Thread] = None
@@ -516,6 +754,7 @@ class MetricsServer:
         refresh_interval = self.refresh_interval_ms
         profile_id = self.profile_id
         port = self.port
+        sim_controller = self.sim_controller
 
         @app.route("/")
         def dashboard() -> str:
@@ -531,6 +770,28 @@ class MetricsServer:
             snapshot = collector.summary()
             devices = collector.device_breakdown(limit=None)
             return jsonify({"metrics": snapshot, "devices": devices})
+
+        @app.get("/api/run/status")
+        def run_status() -> Any:
+            return jsonify(sim_controller.status())
+
+        @app.post("/api/run/start")
+        def run_start() -> Any:
+            payload = request.get_json(force=True) or {}
+            status = sim_controller.start(
+                device_count=_to_int(payload.get("device_count")),
+                duration=_to_float(payload.get("duration")),
+                interval=_to_float(payload.get("interval")),
+                qos=_to_int(payload.get("qos")),
+            )
+            code = 400 if status.get("error") else 200
+            return jsonify(status), code
+
+        @app.post("/api/run/stop")
+        def run_stop() -> Any:
+            status = sim_controller.stop()
+            code = 400 if status.get("error") else 200
+            return jsonify(status), code
 
         if hasattr(collector, "ingest"):
             @app.post("/api/shard")

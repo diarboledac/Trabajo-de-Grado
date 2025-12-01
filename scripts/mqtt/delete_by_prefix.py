@@ -7,36 +7,11 @@ import sys
 from contextlib import ExitStack
 from typing import Dict, Iterable, List, Tuple
 
-from dotenv import load_dotenv
-
 from tb import TB, TBError
+from tb_cli import configured_clients, fail
 
-load_dotenv(override=True)
-
-TB_URL = os.getenv("TB_URL", "").rstrip("/")
-TB_USERNAME = os.getenv("TB_USERNAME")
-TB_PASSWORD = os.getenv("TB_PASSWORD")
-TB_PARENT_URL = os.getenv("TB_PARENT_URL", "").rstrip("/")
-TB_PARENT_USERNAME = os.getenv("TB_PARENT_USERNAME") or TB_USERNAME
-TB_PARENT_PASSWORD = os.getenv("TB_PARENT_PASSWORD") or TB_PASSWORD
 PREFIX = os.getenv("DEVICE_PREFIX", "sim")
 PAGE_SIZE = 200
-
-
-def fail(msg: str, code: int = 1) -> None:
-    print(msg, file=sys.stderr)
-    raise SystemExit(code)
-    
-
-def configured_clients() -> List[Tuple[str, TB]]:
-    if not TB_URL or not TB_USERNAME or not TB_PASSWORD:
-        fail("[ERR] Faltan TB_URL/TB_USERNAME/TB_PASSWORD en el entorno")
-    clients: List[Tuple[str, TB]] = [("edge", TB(TB_URL, TB_USERNAME, TB_PASSWORD))]
-    if TB_PARENT_URL and TB_PARENT_URL != TB_URL:
-        if not TB_PARENT_USERNAME or not TB_PARENT_PASSWORD:
-            fail("[ERR] Config .env incompleta para el servidor principal (TB_PARENT_USERNAME/TB_PARENT_PASSWORD)")
-        clients.append(("principal", TB(TB_PARENT_URL, TB_PARENT_USERNAME, TB_PARENT_PASSWORD)))
-    return clients
 
 
 def list_devices(api: TB) -> Iterable[Dict[str, object]]:

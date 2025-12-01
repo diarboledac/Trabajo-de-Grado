@@ -3,43 +3,10 @@
 from __future__ import annotations
 
 import csv
-import os
-import sys
 from contextlib import ExitStack
-from pathlib import Path
-from typing import List, Tuple
-
-from dotenv import load_dotenv
 
 from tb import TB, TBError
-
-load_dotenv(override=True)
-
-ROOT = Path(__file__).resolve().parents[2]
-CSV_FILE = ROOT / "data" / "provisioning" / "devices.csv"
-
-TB_URL = os.getenv("TB_URL", "").rstrip("/")
-TB_USERNAME = os.getenv("TB_USERNAME")
-TB_PASSWORD = os.getenv("TB_PASSWORD")
-TB_PARENT_URL = os.getenv("TB_PARENT_URL", "").rstrip("/")
-TB_PARENT_USERNAME = os.getenv("TB_PARENT_USERNAME") or TB_USERNAME
-TB_PARENT_PASSWORD = os.getenv("TB_PARENT_PASSWORD") or TB_PASSWORD
-
-
-def fail(msg: str, code: int = 1) -> None:
-    print(msg, file=sys.stderr)
-    raise SystemExit(code)
-
-
-def configured_clients() -> List[Tuple[str, TB]]:
-    if not TB_URL or not TB_USERNAME or not TB_PASSWORD:
-        fail("Config .env incompleta (TB_URL, TB_USERNAME, TB_PASSWORD)")
-    clients: List[Tuple[str, TB]] = [("edge", TB(TB_URL, TB_USERNAME, TB_PASSWORD))]
-    if TB_PARENT_URL and TB_PARENT_URL != TB_URL:
-        if not TB_PARENT_USERNAME or not TB_PARENT_PASSWORD:
-            fail("Config .env incompleta para el servidor principal (TB_PARENT_USERNAME/TB_PARENT_PASSWORD)")
-        clients.append(("principal", TB(TB_PARENT_URL, TB_PARENT_USERNAME, TB_PARENT_PASSWORD)))
-    return clients
+from tb_cli import CSV_FILE, configured_clients, fail
 
 
 def delete_device(api: TB, dev_id: str, scope: str) -> None:
