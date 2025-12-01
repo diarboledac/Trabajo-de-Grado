@@ -102,6 +102,23 @@ Ejecuta `py -3 -m compileall scripts` tras cambios estructurales para detectar e
 ---
 
 ## 4. Ejecución local
+### 4.0 Dashboard interactivo (Start/Stop)
+- Lanza el servidor Flask de m?tricas y control (puerto por defecto 5050):
+  ```bash
+  py -3 - <<'PY'
+  from scripts.mqtt.metrics_server import GlobalMetricsCollector, MetricsServer
+  collector = GlobalMetricsCollector()
+  srv = MetricsServer(collector, host="0.0.0.0", port=5050)
+  srv.start()
+  print("Dashboard en http://localhost:5050 (Ctrl+C para salir)")
+  import time
+  while True:
+      time.sleep(3600)
+  PY
+  ```
+- Abre `http://<host>:5050`: el panel ?Simulation control? permite fijar `device_count`, `duration`, `interval` y `QoS`, y expone botones Start/Stop. Internamente llama a `mqtt_stress_async.py` con esos par?metros y muestra el PID/estado.
+- Las gr?ficas de m?tricas siguen disponibles en la misma p?gina. Si el puerto est? ocupado, ajusta `port` al crear `MetricsServer`.
+
 ### 4.1 Flujo completo con un solo comando
 ```bash
 py -3 scripts/mqtt/run_stress_suite.py --deactivate-after --duration 120 --device-count 20
