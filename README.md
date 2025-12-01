@@ -241,6 +241,14 @@ Conserva esta carpeta entre corridas para reutilizar tokens y comparar resultado
 6. **Reporte**: `py -3 scripts/mqtt/report_last_run.py` y revisar `data/metrics/`.
 7. **Limpieza**: `py -3 scripts/mqtt/deactivate_devices.py --all` o ejecutar con `--deactivate-after`.
 
+### 8.1 Pipeline automatico de resultados
+- Coloca los CSV de pruebas en `resultados/` (puedes copiar desde `data/metrics/` o anadir nuevos).
+- Genera figuras y LaTeX con `py -3 scripts/procesar_resultados.py` (crea `figuras/resultados/` y `docs/resultados_auto.tex`).
+- Valida la calidad de las pruebas con `py -3 scripts/verificar_pruebas.py` (salida en `reportes/reporte_pruebas.txt`).
+- Compila la tesis; `doc/DocumentoGrado.tex` ya incluye `../docs/resultados_auto.tex` dentro de la seccion de resultados.
+- Cada vez que agregues CSV, vuelve a correr ambos scripts para refrescar tablas, graficas y reporte.
+
+
 ---
 
 ## 9. Solución de problemas

@@ -327,6 +327,11 @@ for clients, (avg_lat, avg_mps) in summary.items():
           f"{avg_lat:6.2f} ms, {avg_mps:7.2f} msg/s")
 \end{lstlisting}
 
+\section{Resultados experimentales}
+\label{sec:resultados-experimentales}
+\subsection{Resultados automáticos de pruebas}
+\input{../docs/resultados_auto.tex}
+
 \section{Estructura de los registros JSONL}
 Los archivos en \texttt{data/logs/} conservan eventos por dispositivo. Cada l\'inea contiene el identificador del dispositivo, el tipo de evento (conexi\'on, publicaci\'on o error) y metadatos de sincronizaci\'on. Esta estructura permite filtrar fallas por prefijo y correlacionar eventos con los snapshots de m\'etricas reportados por \texttt{metrics\_server.py}.
 
