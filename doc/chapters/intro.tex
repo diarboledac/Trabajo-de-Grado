@@ -1,0 +1,6 @@
+\section{Introducci\'on}
+La consolidaci\'on de plataformas de gesti\'on IoT ha impulsado la adopci\'on de arquitecturas de telemetr\'ia que requieren operar bajo cargas crecientes y entornos adversos. ThingsBoard, una soluci\'on de c\'odigo abierto para integraci\'on de dispositivos, procesamiento de eventos y visualizaci\'on, ofrece microservicios que deben dimensionarse de acuerdo con la demanda de dispositivos y la latencia tolerable por las aplicaciones \cite{thingsboard-docs}. Evaluar esos l\'imites es fundamental cuando el despliegue atiende sensores cr\'iticos o infraestructura industrial.
+
+En este proyecto se dise\~n\'o una red HaLow que separa l\'ogicamente el segmento de telemetr\'ia de otros servicios, permitiendo inyectar retardos, p\'erdidas y jitter controlado para reproducir escenarios de campo. Sobre esta topolog\'ia se ejecutaron scripts propios que generan carga MQTT y recopilan m\'etricas en caliente, aprovechando la automatizaci\'on incluida en el repositorio.
+
+El documento presenta el marco conceptual, los objetivos y la metodolog\'ia utilizada para caracterizar el comportamiento del servidor ThingsBoard bajo distintas intensidades de tr\'afico. Asimismo, resume los resultados cuantitativos, discute las implicaciones operativas y establece recomendaciones para futuras mejoras.

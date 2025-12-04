@@ -642,6 +642,7 @@ class DeviceWorker:
         backoff_base: float,
         backoff_max: float,
         toggle_registry: DeviceToggleRegistry,
+        payload_padding: int = 0,
     ) -> None:
         self.config = config
         self.host = host
@@ -658,6 +659,7 @@ class DeviceWorker:
         self._toggle_sleep = max(0.5, toggle_registry.refresh_interval)
         self._last_disabled_state = False
         self._message_sequence = 0
+        self._payload_padding = max(0, int(payload_padding))
 
     async def _handle_manual_toggle(self) -> bool:
         disabled = self.toggle_registry.is_disabled(self.config.device_id)
@@ -692,7 +694,7 @@ class DeviceWorker:
     def _build_payload(self) -> Dict[str, Any]:
         self._message_sequence += 1
         # Randomized but deterministic-looking telemetry fields.
-        return {
+        payload = {
             "seq": self._message_sequence,
             "ts": utcnow().isoformat(),
             "temperature": round(random.uniform(18.0, 32.0), 2),
@@ -701,6 +703,9 @@ class DeviceWorker:
             "status": random.choice(["idle", "active", "maintenance"]),
             "device_id": self.config.device_id,
         }
+        if self._payload_padding > 0:
+            payload["padding"] = "x" * self._payload_padding
+        return payload
 
     async def _publish(self, client: Client) -> bool:
         payload_dict = self._build_payload()
@@ -1076,7 +1081,7 @@ async def run_simulation(args: argparse.Namespace) -> None:
             file=sys.stderr,
         )
     metrics = MetricsAggregator(total_devices=len(selected_devices))
-    session_id_base = utcnow().strftime("async-run-%Y%m%d-%H%M%S")
+    session_id_base = args.session_id or utcnow().strftime("async-run-%Y%m%d-%H%M%S")
     shard_suffix = ""
     if getattr(args, "worker", False):
         shard_suffix = f"-s{args.start_id:05d}-n{len(selected_devices):05d}"
@@ -1171,10 +1176,11 @@ async def run_simulation(args: argparse.Namespace) -> None:
             stop_event=stop_event,
             backoff_base=args.backoff_base,
             backoff_max=args.backoff_max,
-            toggle_registry=toggle_registry,
-        )
-        for device in selected_devices
-    ]
+        toggle_registry=toggle_registry,
+        payload_padding=args.payload_padding,
+    )
+    for device in selected_devices
+]
 
     tasks: List[asyncio.Task[None]] = []
     launched = 0
@@ -1223,7 +1229,7 @@ async def run_simulation(args: argparse.Namespace) -> None:
     if metrics_server is not None:
         metrics_server.stop()
     print(f"Eventos guardados en {json_log_path}")
-    print(f"M├®tricas guardadas en {csv_log_path}")
+    print(f"Metricas guardadas en {csv_log_path}")
     try:
         summary = metrics.summary()
         report_path = generate_latex_report(session_id, csv_log_path, summary)
@@ -1283,6 +1289,18 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         type=float,
         default=0.0,
         help="Segundos de espera entre cada rampa.",
+    )
+    parser.add_argument(
+        "--payload-padding",
+        type=int,
+        default=0,
+        help="Bytes adicionales de relleno en el payload para variar el tamano.",
+    )
+    parser.add_argument(
+        "--session-id",
+        type=str,
+        default=None,
+        help="Identificador de sesion para los artefactos (opcional).",
     )
     parser.add_argument(
         "--duration",

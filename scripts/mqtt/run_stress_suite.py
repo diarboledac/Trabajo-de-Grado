@@ -5,16 +5,25 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+import threading
+from datetime import datetime
 from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv
 
+sys.path.append(str(Path(__file__).resolve().parents[2] / "scripts"))
+from halow_metrics import collect_halow_metrics_loop  # type: ignore
 
 load_dotenv(override=True)
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_DIR = ROOT / "scripts" / "mqtt"
+
+
+def make_session_id() -> str:
+    """Crea un identificador simple basado en timestamp."""
+    return datetime.utcnow().strftime("%Y%m%d-%H%M%S")
 
 
 def run_python(script: Path, extra_args: List[str] | None = None) -> None:
@@ -101,6 +110,15 @@ def parse_args() -> tuple[argparse.Namespace, List[str]]:
 def main() -> None:
     args, passthrough = parse_args()
 
+    # Preparar session_id para etiquetar métricas HaLow
+    session_id = make_session_id()
+    stop_halow_event = threading.Event()
+    halow_thread = threading.Thread(
+        target=collect_halow_metrics_loop,
+        args=(session_id, 2.0, stop_halow_event),
+        daemon=True,
+    )
+
     if not args.skip_provision:
         run_python(SCRIPTS_DIR / "create_devices.py")
 
@@ -129,7 +147,16 @@ def main() -> None:
         stress_cmd.append("--disable-dashboard")
 
     stress_cmd.extend(passthrough)
-    run_python(SCRIPTS_DIR / "mqtt_stress_async.py", stress_cmd)
+    try:
+        # Iniciar colector HaLow antes de la simulación MQTT
+        halow_thread.start()
+        # Propagar session_id al simulador para alinear nombres de artefactos
+        stress_cmd.extend(["--session-id", session_id])
+        run_python(SCRIPTS_DIR / "mqtt_stress_async.py", stress_cmd)
+    finally:
+        # Detener colector HaLow
+        stop_halow_event.set()
+        halow_thread.join(timeout=5)
 
     if args.deactivate_after:
         run_python(SCRIPTS_DIR / "deactivate_devices.py", ["--all"])

@@ -5,7 +5,26 @@ data/runs/
 data/logs/
 data/metrics/
 data/control/
+data/archive/
 *.log
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+build/
+output/
 
 # Docker / local env
 # Credenciales locales, no subir al repositorio

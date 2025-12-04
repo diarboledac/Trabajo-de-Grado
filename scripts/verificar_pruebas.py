@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
-RESULTS_DIR = ROOT / "resultados"
-REPORT_PATH = ROOT / "reportes" / "reporte_pruebas.txt"
+RESULTS_DIR = ROOT / "data" / "metrics"
+REPORT_PATH = ROOT / "data" / "metrics" / "reports" / "reporte_pruebas.txt"
 
 
 def parse_float(value: str) -> Optional[float]:
@@ -57,7 +57,7 @@ def main() -> None:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-    csv_files = sorted(RESULTS_DIR.glob("*.csv"))
+    csv_files = sorted(RESULTS_DIR.glob("*-metrics.csv"))
     if not csv_files:
         REPORT_PATH.write_text("No se encontraron CSV en resultados/.\n", encoding="utf-8")
         print("[INFO] No hay archivos que validar; se escribió un reporte básico.")

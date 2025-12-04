@@ -3,6 +3,8 @@ import time
 import sys
 import os
 
+# Script de prueba/legacy: usar scripts/halow_metrics.py para recoleccion formal.
+
 # --- CONFIGURACIÓN ---
 TUBE_IP = "192.168.1.103"
 USERNAME = "root"

@@ -1,0 +1,6 @@
+\section{Marco te\'orico y trabajos relacionados}
+ThingsBoard integra un backend orientado a microservicios, soporta m\'ultiples protocolos y expone herramientas de gobernanza sobre la flota IoT \cite{thingsboard-docs}. La arquitectura est\'andar se compone de un gateway HTTP, un broker MQTT, colas de mensajer\'ia internas y una base de datos de telemetr\'ia; cada subsistema puede escalarse horizontalmente dependiendo de la demanda.
+
+MQTT es el protocolo elegido para las pruebas por su ligereza y por el soporte nativo que la plataforma brinda a la versi\'on 3.1.1 \cite{oasis-mqtt311}. El modelo publish/subscribe, junto con la selecci\'on de niveles de QoS, permite emular dispositivos que publican telemetr\'ia r\'apida y confiable en escenarios donde el ancho de banda no es uniforme.
+
+El concepto de red HaLow se fundamenta en la separaci\'on de planos de datos mediante virtualizaci\'on y emulaci\'on de enlaces de transporte. Herramientas como NetEm facilitan la inserci\'on de retardos, jitter y p\'erdida controlada en interfaces virtuales \cite{hemminger2005netem}, mientras que entornos ligeros como Mininet simplifican la orquestaci\'on de topolog\'ias SDN reproducibles \cite{lantz2010network}. Estas aproximaciones permiten estudiar la robustez del servidor ThingsBoard sin replicar f\'isicamente la red de campo.

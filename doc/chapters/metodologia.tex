@@ -1,0 +1,93 @@
+\section{Metodolog\'ia experimental}
+La metodolog\'ia combina infraestructura virtualizada, scripts de automatizaci\'on y almacenamiento estructurado de resultados. Cada corrida del laboratorio sigue un flujo orquestado: (i) preparaci\'on de la red HaLow y del broker, (ii) aprovisionamiento de dispositivos simulados, (iii) publicaciones controladas con rampas parametrizables y (iv) captura de evidencias (logs JSONL, CSV de m\'etricas y reportes LaTeX). De este modo se garantiza la repetibilidad y la trazabilidad entre las entradas y salidas del experimento.
+
+\subsection{Arquitectura de referencia}
+El entorno se compuso de dos nodos principales: uno dedicado a ThingsBoard y otro al generador de carga. Ambos se interconectan a trav\'es de un switch virtual donde se aplican las reglas de la red HaLow. El inventario se resume en la \Cref{tab:hardware}.
+
+\begin{table}[!t]
+\centering
+\caption{Inventario de hardware del entorno experimental}
+\label{tab:hardware}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Componente & Especificaci\'on \\
+\midrule
+Nodo ThingsBoard & M\'aquina virtual KVM (8 vCPU, 16 GiB RAM, SSD NVMe compartido) \\
+Generador de carga & Servidor f\'isico con 12 vCPU l\'ogicos, 32 GiB RAM y NIC \SI{10}{\giga\bit\per\second} \\
+Aislador HaLow & Bridge Linux dedicado a modelar retardos y p\'erdidas con \texttt{tc netem} \\
+Almacenamiento & Volumen NFS para \texttt{data/} (logs y m\'etricas persistentes) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Red HaLow y emulaci\'on}
+
+La red HaLow se implement\'o empleando namespaces de Linux y reglas de \texttt{tc}, inyectando un retardo base de \SI{12}{\milli\second}, jitter de \SI{3}{\milli\second} y una p\'erdida objetivo de \SI{0.1}{\percent}. Esta configuraci\'on reproduce enlaces de acceso con calidad intermedia y permite estudiar la capacidad de ThingsBoard para absorber variaciones. Los par\'ametros se versionaron en archivos YAML internos para facilitar su reproducci\'on y se documentaron en el repositorio.
+
+\subsection{Instrumentaci\'on y registro}
+
+La automatizaci\'on reside en \texttt{scripts/mqtt/}, donde destaca \texttt{mqtt\_stress\_async.py}, construido sobre \texttt{asyncio-mqtt} \cite{asyncio-mqtt}. El orquestador \texttt{run\_stress\_suite.py} encapsula la provisi\'on de dispositivos, la activaci\'on y la publicaci\'on masiva, mientras que \texttt{metrics\_server.py} expone un panel Flask para visualizar la carga en tiempo real. Para comparaciones puntuales se conserva adem\'as un escenario HTTP con Locust \cite{locust-docs}, el cual permite contrastar la respuesta de ThingsBoard ante protocolos alternos.
+
+Las m\'etricas se almacenan en \texttt{data/metrics/} (CSV) y los eventos detallados en \texttt{data/logs/} (JSONL). Adem\'as, cada sesi\'on genera reportes estructurados en LaTeX y gr\'aficos PNG dentro de \texttt{data/metrics/reports/}, lo que facilita el an\'alisis comparativo sin depender de paneles externos. Durante cada corrida se conserva un archivo resumen en \texttt{data/runs/latest.json}, consumido por \texttt{report\_last\_run.py} para producir informes textuales.
+
+\subsection{Versionamiento de software}
+Las dependencias se definen en \texttt{requirements.txt} y se instalan sobre la imagen base \texttt{python:3.11-slim}; el contenedor resultante replica el entorno empleado en las pruebas locales. La \Cref{tab:software} resume las versiones clave que condicionan la reproducibilidad del laboratorio.
+
+\begin{table}[!t]
+\centering
+\caption{Versiones de software y servicios empleados}
+\label{tab:software}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Componente & Versi\'on \\
+\midrule
+ThingsBoard Community Edition & 3.6.x (Docker, despliegue local) \\
+Python & 3.11 (imagen \texttt{python:3.11-slim}) \\
+asyncio-mqtt & 0.16 \\
+Flask & 2.3 \\
+Mosquitto & 2.0 (broker MQTT embebido) \\
+Docker Engine & 25.x sobre GNU/Linux \\
+Locust & 2.23 (para comparaciones HTTP opcionales) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Procedimiento experimental}
+Cada sesi\'on inicia con la preparaci\'on de credenciales en \texttt{.env} y la ejecuci\'on de \texttt{create\_devices.py}. Posteriormente se lanza el orquestador con los par\'ametros mostrados en el \Cref{lst:launcher}. Los dispositivos simulados publican JSON con telemetr\'ia y se desconectan de forma controlada al finalizar la ventana definida por \texttt{SIM\_DURATION\_SEC}. El flujo est\'andar concluye con la desactivaci\'on de los dispositivos para dejar el tenant en estado limpio.
+
+\begin{figure}[!t]
+\centering
+\begin{verbatim}
+$ python scripts/mqtt/run_stress_suite.py \
+    --device-count 400 \
+    --duration 120 \
+    --ramp "0.25 0.50 1.0" \
+    --metrics-host 0.0.0.0 --metrics-port 5050 \
+    --deactivate-after
+\end{verbatim}
+\caption{Ejecuci\'on reproducible del escenario de carga}
+\label{lst:launcher}
+\end{figure}
+
+Los par\'ametros de la conexi\'on MQTT y del ritmo de publicaci\'on se consolidan en la \Cref{tab:mqtt}. Se trabaj\'o con QoS 1 para garantizar entrega al menos una vez y se habilit\'o TLS de manera opcional seg\'un el escenario.
+
+\begin{table}[!t]
+\centering
+\caption{Par\'ametros de publicaci\'on MQTT declarados en \texttt{.env}}
+\label{tab:mqtt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Par\'ametro & Valor de referencia \\
+\midrule
+\texttt{MQTT\_HOST} & \texttt{localhost} (t\'unel VLAN de la red HaLow) \\
+\texttt{MQTT\_PORT} & 1883 (1884 con TLS) \\
+\texttt{MQTT\_QOS} & 1 (entrega garantizada) \\
+\texttt{PUBLISH\_INTERVAL\_SEC} & \SI{1}{\second} por dispositivo \\
+\texttt{SIM\_DURATION\_SEC} & \SI{120}{\second} o \SI{600}{\second} seg\'un escenario \\
+\texttt{RAMP\_PERCENTAGES} & 0,25 / 0,50 / 1,00 (escalamiento en tres fases) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Par\'ametros y m\'etricas observadas}
+Durante cada prueba se capturaron: (i) promedio, p95 y p99 de latencia MQTT; (ii) throughput instant\'aneo y acumulado; (iii) conexiones activas y abandonos; (iv) uso de CPU, memoria y disco mediante \texttt{docker stats}; y (v) eventos de error por dispositivo. Estos datos se cruzan con los snapshots de red (retardo, jitter y p\'erdida configurados) para interpretar los resultados, y el panel expuesto por \texttt{metrics\_server.py} guarda muestras cada \SI{30}{\second} en CSV para reconstruir las series temporales en herramientas externas.

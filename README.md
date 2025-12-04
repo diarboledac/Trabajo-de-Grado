@@ -241,11 +241,22 @@ Conserva esta carpeta entre corridas para reutilizar tokens y comparar resultado
 7. **Limpieza**: `py -3 scripts/mqtt/deactivate_devices.py --all` o ejecutar con `--deactivate-after`.
 
 ### 8.1 Pipeline automatico de resultados
-- Coloca los CSV de pruebas en `resultados/` (puedes copiar desde `data/metrics/` o anadir nuevos).
-- Genera figuras y LaTeX con `py -3 scripts/procesar_resultados.py` (crea `figuras/resultados/` y `docs/resultados_auto.tex`).
-- Valida la calidad de las pruebas con `py -3 scripts/verificar_pruebas.py` (salida en `reportes/reporte_pruebas.txt`).
-- Compila la tesis; `doc/DocumentoGrado.tex` ya incluye `../docs/resultados_auto.tex` dentro de la seccion de resultados.
-- Cada vez que agregues CSV, vuelve a correr ambos scripts para refrescar tablas, graficas y reporte.
+- Ejecuta las pruebas con `py -3 scripts/run_experiments.py N` (N=1..6, ver tabla abajo). Los artefactos quedan en `data/metrics/` y `data/metrics/reports/`.
+- Genera LaTeX agregado con `py -3 scripts/procesar_resultados.py` (crea/actualiza `doc/resultados_auto.tex` usando los reportes en `data/metrics/reports/`).
+- Valida la calidad de las corridas con `py -3 scripts/verificar_pruebas.py` (salida en `data/metrics/reports/reporte_pruebas.txt`).
+- Compila la tesis; `doc/DocumentoGrado.tex` ya incluye `resultados_auto.tex` dentro de la seccion de resultados.
+- Cada vez que agregues corridas nuevas, vuelve a correr ambos scripts para refrescar tablas, graficas y reporte.
+- Para métricas HaLow, define `HALOW_HOST`, `HALOW_USER`, `HALOW_PASSWORD` en tu entorno; el colector se ejecuta en paralelo y escribe `data/metrics/halow_<session>.csv`, integrado en los reportes.
+
+### 8.2 Pruebas predefinidas
+| N | Nombre | Objetivo | Comando |
+|---|--------|----------|---------|
+| 1 | Baseline | Carga suave con pocos dispositivos y rampas moderadas | `py -3 scripts/run_experiments.py 1` |
+| 2 | Escalado en dispositivos | Secuencia 50/100/200/400 dispositivos a intervalo 5s | `py -3 scripts/run_experiments.py 2` |
+| 3 | Escalado en frecuencia | Intervalos 10/5/2/1s con 200 dispositivos | `py -3 scripts/run_experiments.py 3` |
+| 4 | Variar payload | 200 dispositivos, intervalo 5s, payload pequeno/medio/grande | `py -3 scripts/run_experiments.py 4` |
+| 5 | Modos edge | Comparar estrategias de ritmo/agrupacion | `py -3 scripts/run_experiments.py 5` |
+| 6 | Estres prolongado | Carga alta y duracion larga para estabilidad | `py -3 scripts/run_experiments.py 6` |
 
 
 ---

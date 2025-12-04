@@ -1,0 +1,53 @@
+\section{Agregaci\'on automatizada de m\'etricas}
+\label{app:agregacion}
+La figura~\ref{fig:latencia-promedio} se reproduce con el fragmento de c\'odigo mostrado a continuaci\'on, que aglutina los CSV de \texttt{data/metrics/} para obtener los promedios de latencia y throughput por cantidad de clientes.
+
+\begin{figure}[!t]
+\centering
+\begin{verbatim}
+from pathlib import Path
+import csv
+from statistics import mean
+
+ROOT = Path("data/metrics")
+clients_of_interest = {20, 100, 200, 400, 500, 1000}
+latency = {}
+throughput = {}
+
+for csv_path in ROOT.glob("*.csv"):
+    with csv_path.open(encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        rows = [
+            row for row in reader
+            if row.get("active_clients") and
+               int(float(row["active_clients"])) in clients_of_interest
+        ]
+    for row in rows:
+        clients = int(float(row["active_clients"]))
+        latency.setdefault(clients, []).append(float(row["avg_latency_ms"]))
+        throughput.setdefault(clients, []).append(float(row["messages_per_second"]))
+
+summary = {
+    clients: (
+        mean(latency[clients]),
+        mean(throughput[clients])
+    )
+    for clients in sorted(latency)
+}
+
+for clients, (avg_lat, avg_mps) in summary.items():
+    print(f"{clients:>3} clientes -> "
+          f"{avg_lat:6.2f} ms, {avg_mps:7.2f} msg/s")
+\end{verbatim}
+\caption{Script de agregaci\'on para reproducir promedios por carga}
+\label{lst:agregacion}
+\end{figure}
+
+\section{Resultados experimentales}
+\label{sec:resultados-experimentales}
+\subsection{Resultados autom\'aticos de pruebas}
+\input{resultados_auto.tex}
+\clearpage
+
+\section{Estructura de los registros JSONL}
+Los archivos en \texttt{data/logs/} conservan eventos por dispositivo. Cada l\'inea contiene el identificador del dispositivo, el tipo de evento (conexi\'on, publicaci\'on o error) y metadatos de sincronizaci\'on. Esta estructura permite filtrar fallas por prefijo y correlacionar eventos con los snapshots de m\'etricas reportados por \texttt{metrics\_server.py}.

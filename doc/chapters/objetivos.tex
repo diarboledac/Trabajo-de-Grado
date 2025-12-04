@@ -1,0 +1,11 @@
+\section{Objetivo general y objetivos espec\'ificos}
+\subsection{Objetivo general}
+Cuantificar la capacidad del servidor ThingsBoard desplegado en la red HaLow institucional, identificando los l\'imites de carga que garantizan los compromisos de QoS (latencia, disponibilidad y entrega de mensajes) y documentando las condiciones bajo las cuales el sistema se degrada.
+
+\subsection{Objetivos espec\'ificos}
+\begin{enumerate}
+  \item Levantar un escenario experimental reproducible que combine la red HaLow, los scripts de generaci\'on de carga y los mecanismos de observabilidad.
+  \item Implementar flujos automatizados de provisi\'on, activaci\'on y publicaci\'on MQTT que permitan barridos de dispositivos, intervalos y rampas.
+  \item Registrar y analizar indicadores clave: throughput instant\'aneo y acumulado, latencia promedio/p95/p99, tasas de errores y uso de recursos del servidor.
+  \item Establecer el punto de colapso y proponer acciones de mitigaci\'on (aislamiento de recursos, ajustes de rampa, afinidad de vCPU, etc.).
+\end{enumerate}

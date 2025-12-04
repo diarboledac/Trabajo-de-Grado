@@ -1,0 +1,69 @@
+\section{Resultados}
+Los resultados se consolidaron a partir de los CSV generados por cada corrida, los reportes LaTeX autom\'aticos y los eventos JSONL que describen el comportamiento de cada dispositivo. Con este material se construyen tablas comparativas, gr\'aficos de tendencia y res\'umenes narrativos que permiten contrastar escenarios de baja, media y alta carga.
+
+La \Cref{tab:resumen-cargas} resume seis corridas representativas. Las dos primeras corresponden a escenarios de baja y media carga; las siguientes exploran condiciones de saturaci\'on progresiva y un escenario optimizado tras aislar los recursos del broker, y la fila correspondiente a 1000 clientes recoge la corrida intermedia con intervalo de \SI{5}{\second}.
+
+\begin{table}[!t]
+\centering
+\caption{Resumen de corridas experimentales seleccionadas}
+\label{tab:resumen-cargas}
+\begin{tabular}{@{}l S[table-format=5.0] S[table-format=6.2] S[table-format=6.0] S[table-format=3.2] S[table-format=3.2]@{}}
+\toprule
+Identificador & {Clientes} & {Duraci\'on (\si{\second})} & {Mensajes} & {Lat. prom. (\si{\milli\second})} & {Throughput (msg/s)} \\
+\midrule
+20251029-222301 & 20 & 120.02 & 2400 & 2.95 & 19.99 \\
+20251021-225317 & 200 & 600.03 & 15000 & 4.94 & 15.62 \\
+20251029-231641 & 400 & 120.16 & 46164 & 23.01 & 372.75 \\
+20251029-232925 & 400 & 120.10 & 36443 & 184.47 & 322.23 \\
+20251022-221137 & 500 & 600.08 & 297581 & 7.22 & 494.86 \\
+20251115-170057 & 1000 & 600.09 & 120000 & 7.97 & 199.97 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La \Cref{fig:latencia-promedio} grafica la evoluci\'on del promedio de latencia y del throughput seg\'un el n\'umero de clientes concurrentes. El c\'odigo de agregaci\'on que produce estos puntos se recoge en el Ap\'endice~\ref{app:agregacion} y se puede ejecutar sobre el repositorio para regenerar la figura de forma automatizada.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=\linewidth,
+  height=0.58\linewidth,
+  xmin=0,
+  xmax=1000,
+  xlabel={Clientes concurrentes},
+  ylabel={Latencia promedio (\si{\milli\second})},
+  xtick={0,200,400,600,800,1000},
+  ytick={0,50,100,150,200},
+  ymin=0,
+  ymax=200,
+  grid=both,
+  legend style={at={(0.5,1.25)},anchor=south,legend columns=2},
+  legend cell align=left
+]
+\addplot[color=blue,mark=*] coordinates {(20,3.03)(100,4.39)(200,13.62)(400,60.24)(500,5.97)(1000,7.97)};
+\addlegendentry{Latencia promedio}
+\end{axis}
+\begin{axis}[
+  width=\linewidth,
+  height=0.58\linewidth,
+  xmin=0,
+  xmax=1000,
+  axis y line*=right,
+  axis x line=none,
+  ylabel={Throughput promedio (msg/s)},
+  ytick={0,100,200,300,400},
+  ymin=0,
+  ymax=420,
+  legend style={at={(0.5,1.12)},anchor=south,legend columns=2},
+  legend cell align=left
+]
+\addplot[color=orange,mark=square*] coordinates {(20,19.99)(100,13.16)(200,115.80)(400,371.85)(500,272.43)(1000,199.97)};
+\addlegendentry{Throughput promedio}
+\end{axis}
+\end{tikzpicture}
+\caption{Relaci\'on entre clientes concurrentes, latencia y throughput a partir de promedios agregados.}
+\label{fig:latencia-promedio}
+\end{figure}
+
+Para completar el barrido, se ejecut\'o la sesi\'on `async-run-20251115-170057` con \num{1000} dispositivos y un intervalo de publicaci\'on de \SI{5}{\second}, durante unos \SI{600}{\second}. En total se generaron 120\,000 publicaciones exitosas (sin mensajes fallidos), lo que equivale a un promedio de \num{120} mensajes por dispositivo y una tasa agregada cercana a \num{200}~msg/s, con un ancho de banda total de aproximadamente \SI{0.25}{\mega\bit\per\second}. La latencia promedio ponderada se mantuvo en torno a \SI{8}{\milli\second}, con p95 inferiores a \SI{23}{\milli\second} y p99 por debajo de \SI{63}{\milli\second}. Todos los clientes permanecieron conectados durante la ventana de prueba, lo que indica que el servidor ThingsBoard y la red HaLow pueden sostener este nivel de carga sin degradaci\'on apreciable de QoS.

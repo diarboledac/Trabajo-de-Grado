@@ -1,0 +1,14 @@
+\section{Conclusiones y trabajo futuro}
+\subsection{Conclusiones}
+El estudio demuestra que ThingsBoard, en la configuraci\'on analizada, soporta cargas medias sin comprometer la latencia siempre que el broker disponga de recursos dedicados. La red HaLow permiti\'o reproducir condiciones de campo y evidenciar que la contenci\'on entre broker y base de datos es el principal factor de degradaci\'on a partir de \num{400} clientes.
+
+La automatizaci\'on contenida en \texttt{scripts/mqtt/} acelera la generaci\'on de evidencia cuantitativa y facilita la trazabilidad entre m\'etricas y logs. Las mediciones sirven como l\'imites de referencia para planear escalamiento horizontal, segmentar la red o aplicar balanceo de carga sobre el broker.
+
+\subsection{Trabajo futuro}
+\begin{enumerate}
+  \item Extender la red HaLow con perfiles de movilidad y variabilidad diurna para estudiar latencias no estacionarias.
+  \item Integrar un pipeline de an\'alisis que genere dashboards en tiempo real a partir de \texttt{data/metrics/}.
+  \item Evaluar protocolos alternos (HTTP, CoAP) mediante los endpoints ya expuestos por ThingsBoard.
+  \item Automatizar pruebas de resiliencia ante fallos parciales, incluyendo reinicios del broker y ca\'ida del almacenamiento.
+  \item Incorporar validaciones de seguridad (TLS mutuo, rotaci\'on de tokens) en concurrencias superiores a \num{500} clientes.
+\end{enumerate}
