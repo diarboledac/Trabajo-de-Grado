@@ -330,7 +330,8 @@ def build_tex(escenarios: Dict[str, List[Dict[str, Any]]]) -> str:
         lines.append(f"\\subsubsection{{Escenario {escenario} ({nodos_txt} dispositivos)}}")
 
         if figure_entry:
-            rel = Path(figure_entry["report_png"]).relative_to(ROOT).as_posix()
+            # Paths en LaTeX deben ser relativos al directorio que contiene DocumentoGrado.tex (doc/).
+            rel = (Path("..") / Path(figure_entry["report_png"]).relative_to(ROOT)).as_posix()
             lines.append("\\begin{figure}[!t]")
             lines.append("  \\centering")
             lines.append(f"  \\includegraphics[width=\\linewidth]{{{rel}}}")

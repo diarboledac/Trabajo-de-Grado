@@ -200,11 +200,11 @@ def run_prueba_6() -> None:
     run_suite(
         [
             "--duration",
-            "1800",
+            "7200",
             "--device-count",
             "1000",
             "--interval",
-            "3",
+            "5",
             "--ramp-percentages",
             "25",
             "50",

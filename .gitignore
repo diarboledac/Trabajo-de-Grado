@@ -7,6 +7,7 @@ data/metrics/
 data/control/
 data/archive/
 *.log
+doc/DocumentoGrado.pdf
 *.aux
 *.bbl
 *.bcf
@@ -25,6 +26,17 @@ data/archive/
 *.vrb
 build/
 output/
+
+# Permitir marcadores vacíos en data/ y doc/figures
+!data/metrics/
+!data/metrics/.gitkeep
+!data/metrics/reports/
+!data/metrics/reports/.gitkeep
+!data/logs/
+!data/logs/.gitkeep
+!data/runs/
+!data/runs/.gitkeep
+!doc/figures/.gitkeep
 
 # Docker / local env
 # Credenciales locales, no subir al repositorio

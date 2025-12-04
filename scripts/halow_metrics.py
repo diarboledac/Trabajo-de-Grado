@@ -22,6 +22,7 @@ import paramiko
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "metrics"
 
+# Estos valores pueden cargarse más tarde (load_dotenv en run_stress_suite), así que siempre leemos del entorno.
 HALOW_HOST = os.getenv("HALOW_HOST")
 HALOW_USER = os.getenv("HALOW_USER")
 HALOW_PASSWORD = os.getenv("HALOW_PASSWORD")
@@ -29,11 +30,14 @@ HALOW_IFACE = os.getenv("HALOW_INTERFACE", "halow0")
 
 
 def _connect_ssh() -> paramiko.SSHClient:
-    if not HALOW_HOST or not HALOW_USER or not HALOW_PASSWORD:
+    host = os.getenv("HALOW_HOST", HALOW_HOST)
+    user = os.getenv("HALOW_USER", HALOW_USER)
+    password = os.getenv("HALOW_PASSWORD", HALOW_PASSWORD)
+    if not host or not user or not password:
         raise RuntimeError("HALOW_HOST, HALOW_USER y HALOW_PASSWORD deben estar definidos.")
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(HALOW_HOST, username=HALOW_USER, password=HALOW_PASSWORD, timeout=5)
+    client.connect(host, username=user, password=password, timeout=5)
     return client
 
 
@@ -86,10 +90,10 @@ def _parse_iw_link(output: str) -> Tuple[Optional[float], Optional[float]]:
     return tx, rx
 
 
-def _parse_dev_stats(output: str) -> Tuple[Optional[int], Optional[int]]:
+def _parse_dev_stats(output: str, iface: str) -> Tuple[Optional[int], Optional[int]]:
     """Lee /proc/net/dev para bytes tx/rx."""
     for line in output.splitlines():
-        if line.strip().startswith(f"{HALOW_IFACE}:"):
+        if line.strip().startswith(f"{iface}:"):
             _, rest = line.split(":", 1)
             fields = rest.split()
             try:
@@ -101,6 +105,29 @@ def _parse_dev_stats(output: str) -> Tuple[Optional[int], Optional[int]]:
     return None, None
 
 
+def _resolve_iface(ssh_client: paramiko.SSHClient) -> str:
+    """Elige interfaz: prioridad env, luego halow*, luego primera interfaz encontrada."""
+    env_iface = os.getenv("HALOW_INTERFACE", HALOW_IFACE)
+    try:
+        iw_out = _run("iw dev", ssh_client)
+        interfaces = []
+        for line in iw_out.splitlines():
+            line = line.strip()
+            if line.startswith("Interface "):
+                iface = line.split()[1]
+                interfaces.append(iface)
+        if env_iface in interfaces:
+            return env_iface
+        for iface in interfaces:
+            if iface.startswith("halow"):
+                return iface
+        if interfaces:
+            return interfaces[0]
+    except Exception:
+        pass
+    return env_iface
+
+
 def get_halow_metrics(ssh_client: Optional[paramiko.SSHClient] = None) -> Dict[str, Any]:
     """Obtiene métricas del Tube-AHM vía SSH. No lanza excepción si falla; devuelve parciales."""
     close_client = False
@@ -109,8 +136,9 @@ def get_halow_metrics(ssh_client: Optional[paramiko.SSHClient] = None) -> Dict[s
         if ssh_client is None:
             ssh_client = _connect_ssh()
             close_client = True
+        iface = _resolve_iface(ssh_client)
         try:
-            iwinfo_out = _run(f"iwinfo {HALOW_IFACE} info", ssh_client)
+            iwinfo_out = _run(f"iwinfo {iface} info", ssh_client)
             rssi, noise, bitrate = _parse_iw_info(iwinfo_out)
             metrics["halow_rssi_dbm"] = rssi
             metrics["halow_noise_dbm"] = noise
@@ -119,7 +147,7 @@ def get_halow_metrics(ssh_client: Optional[paramiko.SSHClient] = None) -> Dict[s
             logging.warning("No se pudo obtener iwinfo: %s", exc)
 
         try:
-            iwlink_out = _run(f"iw dev {HALOW_IFACE} link", ssh_client)
+            iwlink_out = _run(f"iw dev {iface} link", ssh_client)
             tx_b, rx_b = _parse_iw_link(iwlink_out)
             if tx_b is not None:
                 metrics["halow_tx_rate_mbps"] = tx_b
@@ -130,7 +158,7 @@ def get_halow_metrics(ssh_client: Optional[paramiko.SSHClient] = None) -> Dict[s
 
         try:
             dev_out = _run("cat /proc/net/dev", ssh_client)
-            rx_bytes, tx_bytes = _parse_dev_stats(dev_out)
+            rx_bytes, tx_bytes = _parse_dev_stats(dev_out, iface)
             metrics["halow_rx_bytes"] = rx_bytes
             metrics["halow_tx_bytes"] = tx_bytes
         except Exception as exc:  # noqa: BLE001
@@ -138,7 +166,7 @@ def get_halow_metrics(ssh_client: Optional[paramiko.SSHClient] = None) -> Dict[s
 
         # Opcional: station dump para retries/drops
         try:
-            station_out = _run(f"iw dev {HALOW_IFACE} station dump", ssh_client)
+            station_out = _run(f"iw dev {iface} station dump", ssh_client)
             retries = drops = None
             for line in station_out.splitlines():
                 if "retry" in line.lower():
@@ -188,10 +216,13 @@ def collect_halow_metrics_loop(session_id: str, interval_sec: float = 2.0, stop_
             if stop_event is not None and stop_event.is_set():
                 break
             ts = datetime.now().isoformat()
-            data = get_halow_metrics()
+            try:
+                data = get_halow_metrics()
+            except Exception as exc:  # noqa: BLE001
+                logging.warning("Colector HaLow: no se pudieron obtener métricas: %s", exc)
+                data = {}
             row = {"timestamp": ts}
             row.update({k: data.get(k) for k in header if k != "timestamp"})
             writer.writerow(row)
             handle.flush()
             time.sleep(max(interval_sec, 0.5))
-
