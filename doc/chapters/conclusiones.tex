@@ -1,14 +1,16 @@
 \section{Conclusiones y trabajo futuro}
 \subsection{Conclusiones}
-El estudio demuestra que ThingsBoard, en la configuraci\'on analizada, soporta cargas medias sin comprometer la latencia siempre que el broker disponga de recursos dedicados. La red HaLow permiti\'o reproducir condiciones de campo y evidenciar que la contenci\'on entre broker y base de datos es el principal factor de degradaci\'on a partir de \num{400} clientes.
+El estudio demuestra que ThingsBoard, en la configuraci\'on analizada y apoyado en una red IEEE~802.11ah (HaLow) con buenas condiciones de enlace, es capaz de gestionar del orden de \num{400} dispositivos concurrentes sin p\'erdida de mensajes y con latencias promedio del orden de pocos milisegundos. En los escenarios evaluados, la capa de acceso inal\'ambrico no se comporta como cuello de botella: los valores de RSSI, ruido y tasa de transmisi\'on se mantienen dentro de rangos holgados, por lo que las primeras restricciones de escalabilidad se asocian principalmente al \emph{back-end} de aplicaciones y al dimensionamiento del broker MQTT.
 
-La automatizaci\'on contenida en \texttt{scripts/mqtt/} acelera la generaci\'on de evidencia cuantitativa y facilita la trazabilidad entre m\'etricas y logs. Las mediciones sirven como l\'imites de referencia para planear escalamiento horizontal, segmentar la red o aplicar balanceo de carga sobre el broker.
+Las variaciones en el intervalo de env\'io y en el tama\~no del \emph{payload} muestran que es posible incrementar el \emph{throughput} agregado en uno o varios ordenes de magnitud sin comprometer la estabilidad de la plataforma, siempre que se acepten aumentos moderados en la latencia y en sus percentiles superiores. No obstante, ciertos perfiles intermedios de mensaje y combinaciones de frecuencia pueden provocar latencias m\'as elevadas, lo que resalta la importancia de ajustar estos par\'ametros en funci\'on de los requisitos de cada aplicaci\'on concreta.
+
+Las estrategias de control de tasa y los escenarios as\'incronos ponen de manifiesto un compromiso entre volumen de telemetr\'ia, latencia y protecci\'on del servidor. La introducci\'on de l\'imites de tasa reduce significativamente el n\'umero de mensajes procesados a costa de incrementar ligeramente la latencia, mientras que la activaci\'on escalonada de grupos de dispositivos demuestra que la soluci\'on puede absorber aumentos bruscos en el n\'umero de clientes sin ca\'idas masivas ni p\'erdida de informaci\'on. En conjunto, los resultados validan la pertinencia de la arquitectura propuesta para aplicaciones IoT de monitorizaci\'on peri\'odica de baja y media velocidad, y proporcionan una metodolog\'ia reproducible para caracterizar cargas m\'as exigentes en trabajos posteriores.
 
 \subsection{Trabajo futuro}
 \begin{enumerate}
-  \item Extender la red HaLow con perfiles de movilidad y variabilidad diurna para estudiar latencias no estacionarias.
-  \item Integrar un pipeline de an\'alisis que genere dashboards en tiempo real a partir de \texttt{data/metrics/}.
-  \item Evaluar protocolos alternos (HTTP, CoAP) mediante los endpoints ya expuestos por ThingsBoard.
-  \item Automatizar pruebas de resiliencia ante fallos parciales, incluyendo reinicios del broker y ca\'ida del almacenamiento.
-  \item Incorporar validaciones de seguridad (TLS mutuo, rotaci\'on de tokens) en concurrencias superiores a \num{500} clientes.
+  \item Extender la red HaLow con perfiles de movilidad y variabilidad diurna para estudiar latencias no estacionarias y escenarios de congesti\'on en franjas horarias espec\'ificas.
+  \item Integrar un \emph{pipeline} de an\'alisis que genere paneles de control en tiempo real a partir de los archivos en \texttt{data/metrics/}, de modo que los operadores puedan visualizar la degradaci\'on de rendimiento sin necesidad de posprocesar manualmente los CSV.
+  \item Evaluar protocolos alternativos (HTTP, CoAP) mediante los \emph{endpoints} ya expuestos por ThingsBoard, comparando su desempe\~no frente a MQTT sobre HaLow en t\'erminos de latencia, p\'erdida de mensajes y consumo de ancho de banda.
+  \item Automatizar pruebas de resiliencia ante fallos parciales, incluyendo reinicios controlados del broker, ca\'ida del almacenamiento y degradaci\'on inducida de la red, para observar el comportamiento de reconexi\'on y la persistencia de telemetr\'ia.
+  \item Incorporar validaciones de seguridad (TLS mutuo, rotaci\'on peri\'odica de \emph{tokens}, listas de control de acceso) en concurrencias superiores a \num{500} clientes, cuantificando el impacto de estas medidas sobre la latencia y el \emph{throughput}.
 \end{enumerate}

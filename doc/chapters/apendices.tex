@@ -1,9 +1,10 @@
 \section{Agregaci\'on automatizada de m\'etricas}
 \label{app:agregacion}
-La figura~\ref{fig:latencia-promedio} se reproduce con el fragmento de c\'odigo mostrado a continuaci\'on, que aglutina los CSV de \texttt{data/metrics/} para obtener los promedios de latencia y throughput por cantidad de clientes.
+El fragmento de c\'odigo mostrado a continuaci\'on aglutina los CSV de \texttt{data/metrics/} para obtener los promedios de latencia y throughput por cantidad de clientes.
 
 \begin{figure}[!t]
 \centering
+\scriptsize
 \begin{verbatim}
 from pathlib import Path
 import csv
@@ -39,6 +40,7 @@ for clients, (avg_lat, avg_mps) in summary.items():
     print(f"{clients:>3} clientes -> "
           f"{avg_lat:6.2f} ms, {avg_mps:7.2f} msg/s")
 \end{verbatim}
+\normalsize
 \caption{Script de agregaci\'on para reproducir promedios por carga}
 \label{lst:agregacion}
 \end{figure}

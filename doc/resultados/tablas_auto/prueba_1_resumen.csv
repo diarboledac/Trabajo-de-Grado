@@ -1,0 +1,2 @@
+config,nodos,exitos,fallidos,mensajes,perdida_pct,duracion_s,lat_prom_ms,lat_min_ms,lat_max_ms,throughput_msg_s,bandwidth_mbps,valida
+p1-20251205-190646-n20,20,300.0,0.0,300.0,0.0,150.02861,25.98892,10.948,36.2817,1.99912,0.0025074,True

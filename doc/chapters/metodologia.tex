@@ -1,8 +1,8 @@
 \section{Metodolog\'ia experimental}
-La metodolog\'ia combina infraestructura virtualizada, scripts de automatizaci\'on y almacenamiento estructurado de resultados. Cada corrida del laboratorio sigue un flujo orquestado: (i) preparaci\'on de la red HaLow y del broker, (ii) aprovisionamiento de dispositivos simulados, (iii) publicaciones controladas con rampas parametrizables y (iv) captura de evidencias (logs JSONL, CSV de m\'etricas y reportes LaTeX). De este modo se garantiza la repetibilidad y la trazabilidad entre las entradas y salidas del experimento.
+La metodolog\'ia combina infraestructura virtualizada, scripts de generaci\'on de carga y captura automatizada de m\'etricas, de modo que cada experimento pueda repetirse con m\'inimas intervenciones manuales y se preserve la trazabilidad entre las entradas y salidas del experimento.
 
 \subsection{Arquitectura de referencia}
-El entorno se compuso de dos nodos principales: uno dedicado a ThingsBoard y otro al generador de carga. Ambos se interconectan a trav\'es de un switch virtual donde se aplican las reglas de la red HaLow. El inventario se resume en la \Cref{tab:hardware}.
+El entorno se compuso de dos nodos principales: uno dedicado a ThingsBoard y otro al generador de carga MQTT, adem\'as del punto de acceso HaLow y los dispositivos físicos necesarios para la red inal\'ambrica. El inventario se resume en la \Cref{tab:hardware}.
 
 \begin{table}[!t]
 \centering
@@ -14,67 +14,21 @@ Componente & Especificaci\'on \\
 \midrule
 Nodo ThingsBoard & M\'aquina virtual KVM (8 vCPU, 16 GiB RAM, SSD NVMe compartido) \\
 Generador de carga & Servidor f\'isico con 12 vCPU l\'ogicos, 32 GiB RAM y NIC \SI{10}{\giga\bit\per\second} \\
-Aislador HaLow & Bridge Linux dedicado a modelar retardos y p\'erdidas con \texttt{tc netem} \\
-Almacenamiento & Volumen NFS para \texttt{data/} (logs y m\'etricas persistentes) \\
+Punto de acceso HaLow & Dispositivo compatible IEEE~802.11ah configurado en modo infraestructura \\
+Enlace hacia ThingsBoard & Red de campus conmutada, VLAN dedicada para el tr\'afico MQTT/HTTP \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Red HaLow y emulaci\'on}
+El nodo de ThingsBoard ejecuta el \emph{broker} MQTT y los servicios de aplicaci\'on sobre una imagen basada en Linux, mientras que el generador de carga ejecuta los scripts de \texttt{scripts/mqtt/} para crear, autenticar y simular dispositivos virtuales. La red HaLow act\'ua como medio de acceso inal\'ambrico entre los dispositivos y el \emph{gateway} que expone el \emph{broker}.
 
-La red HaLow se implement\'o empleando namespaces de Linux y reglas de \texttt{tc}, inyectando un retardo base de \SI{12}{\milli\second}, jitter de \SI{3}{\milli\second} y una p\'erdida objetivo de \SI{0.1}{\percent}. Esta configuraci\'on reproduce enlaces de acceso con calidad intermedia y permite estudiar la capacidad de ThingsBoard para absorber variaciones. Los par\'ametros se versionaron en archivos YAML internos para facilitar su reproducci\'on y se documentaron en el repositorio.
-
-\subsection{Instrumentaci\'on y registro}
-
-La automatizaci\'on reside en \texttt{scripts/mqtt/}, donde destaca \texttt{mqtt\_stress\_async.py}, construido sobre \texttt{asyncio-mqtt} \cite{asyncio-mqtt}. El orquestador \texttt{run\_stress\_suite.py} encapsula la provisi\'on de dispositivos, la activaci\'on y la publicaci\'on masiva, mientras que \texttt{metrics\_server.py} expone un panel Flask para visualizar la carga en tiempo real. Para comparaciones puntuales se conserva adem\'as un escenario HTTP con Locust \cite{locust-docs}, el cual permite contrastar la respuesta de ThingsBoard ante protocolos alternos.
-
-Las m\'etricas se almacenan en \texttt{data/metrics/} (CSV) y los eventos detallados en \texttt{data/logs/} (JSONL). Adem\'as, cada sesi\'on genera reportes estructurados en LaTeX y gr\'aficos PNG dentro de \texttt{data/metrics/reports/}, lo que facilita el an\'alisis comparativo sin depender de paneles externos. Durante cada corrida se conserva un archivo resumen en \texttt{data/runs/latest.json}, consumido por \texttt{report\_last\_run.py} para producir informes textuales.
-
-\subsection{Versionamiento de software}
-Las dependencias se definen en \texttt{requirements.txt} y se instalan sobre la imagen base \texttt{python:3.11-slim}; el contenedor resultante replica el entorno empleado en las pruebas locales. La \Cref{tab:software} resume las versiones clave que condicionan la reproducibilidad del laboratorio.
+\subsection{Configuraci\'on de los scripts}
+Los scripts del repositorio (\texttt{scripts/mqtt/} y \texttt{scripts/halow\_metrics.py}) permiten automatizar tanto la provisi\'on de dispositivos en ThingsBoard como la generaci\'on de telemetr\'ia y la captura de m\'etricas de red. La \Cref{tab:parametros-simulacion} resume los par\'ametros m\'as relevantes.
 
 \begin{table}[!t]
 \centering
-\caption{Versiones de software y servicios empleados}
-\label{tab:software}
-\begin{tabular}{@{}ll@{}}
-\toprule
-Componente & Versi\'on \\
-\midrule
-ThingsBoard Community Edition & 3.6.x (Docker, despliegue local) \\
-Python & 3.11 (imagen \texttt{python:3.11-slim}) \\
-asyncio-mqtt & 0.16 \\
-Flask & 2.3 \\
-Mosquitto & 2.0 (broker MQTT embebido) \\
-Docker Engine & 25.x sobre GNU/Linux \\
-Locust & 2.23 (para comparaciones HTTP opcionales) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Procedimiento experimental}
-Cada sesi\'on inicia con la preparaci\'on de credenciales en \texttt{.env} y la ejecuci\'on de \texttt{create\_devices.py}. Posteriormente se lanza el orquestador con los par\'ametros mostrados en el \Cref{lst:launcher}. Los dispositivos simulados publican JSON con telemetr\'ia y se desconectan de forma controlada al finalizar la ventana definida por \texttt{SIM\_DURATION\_SEC}. El flujo est\'andar concluye con la desactivaci\'on de los dispositivos para dejar el tenant en estado limpio.
-
-\begin{figure}[!t]
-\centering
-\begin{verbatim}
-$ python scripts/mqtt/run_stress_suite.py \
-    --device-count 400 \
-    --duration 120 \
-    --ramp "0.25 0.50 1.0" \
-    --metrics-host 0.0.0.0 --metrics-port 5050 \
-    --deactivate-after
-\end{verbatim}
-\caption{Ejecuci\'on reproducible del escenario de carga}
-\label{lst:launcher}
-\end{figure}
-
-Los par\'ametros de la conexi\'on MQTT y del ritmo de publicaci\'on se consolidan en la \Cref{tab:mqtt}. Se trabaj\'o con QoS 1 para garantizar entrega al menos una vez y se habilit\'o TLS de manera opcional seg\'un el escenario.
-
-\begin{table}[!t]
-\centering
-\caption{Par\'ametros de publicaci\'on MQTT declarados en \texttt{.env}}
-\label{tab:mqtt}
+\caption{Par\'ametros por defecto de la simulaci\'on}
+\label{tab:parametros-simulacion}
 \begin{tabular}{@{}ll@{}}
 \toprule
 Par\'ametro & Valor de referencia \\
@@ -82,12 +36,26 @@ Par\'ametro & Valor de referencia \\
 \texttt{MQTT\_HOST} & \texttt{localhost} (t\'unel VLAN de la red HaLow) \\
 \texttt{MQTT\_PORT} & 1883 (1884 con TLS) \\
 \texttt{MQTT\_QOS} & 1 (entrega garantizada) \\
-\texttt{PUBLISH\_INTERVAL\_SEC} & \SI{1}{\second} por dispositivo \\
-\texttt{SIM\_DURATION\_SEC} & \SI{120}{\second} o \SI{600}{\second} seg\'un escenario \\
-\texttt{RAMP\_PERCENTAGES} & 0,25 / 0,50 / 1,00 (escalamiento en tres fases) \\
+\texttt{PUBLISH\_INTERVAL\_SEC} & \SI{1}{\second} por dispositivo (salvo que se indique lo contrario) \\
+\texttt{SIM\_DURATION\_SEC} & Entre \SI{160}{\second} y \SI{260}{\second} seg\'un escenario \\
+\texttt{RAMP\_PERCENTAGES} & 0,25 / 0,50 / 1,00 (escalamiento en tres fases, cuando aplica) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Par\'ametros y m\'etricas observadas}
-Durante cada prueba se capturaron: (i) promedio, p95 y p99 de latencia MQTT; (ii) throughput instant\'aneo y acumulado; (iii) conexiones activas y abandonos; (iv) uso de CPU, memoria y disco mediante \texttt{docker stats}; y (v) eventos de error por dispositivo. Estos datos se cruzan con los snapshots de red (retardo, jitter y p\'erdida configurados) para interpretar los resultados, y el panel expuesto por \texttt{metrics\_server.py} guarda muestras cada \SI{30}{\second} en CSV para reconstruir las series temporales en herramientas externas.
+Durante cada prueba se capturaron: (i) promedio y percentil 95 de la latencia de publicaci\'on MQTT, (ii) \emph{throughput} agregado en mensajes por segundo, (iii) n\'umero de dispositivos conectados y dispositivos fallidos, y (iv) m\'etricas de la red HaLow tales como potencia recibida (RSSI), nivel de ruido, tasa de transmisi\'on y conteo de \emph{retries} y \emph{drops}. Las m\'etricas de aplicaci\'on se escriben en archivos \texttt{*-metrics.csv}, mientras que las de la red HaLow se almacenan en archivos \texttt{halow\_*.csv} bajo el directorio \texttt{data/metrics/}.
+
+\subsection{Escenarios experimentales}
+A partir de la infraestructura descrita se definieron seis escenarios de prueba, ejecutados mediante los scripts ubicados en \texttt{scripts/mqtt/} y documentados con los archivos CSV bajo \texttt{data/metrics/}:
+
+\begin{enumerate}
+  \item \textbf{Prueba 1 -- l\'inea base con 20 dispositivos}: se simulan \num{20} clientes MQTT publicando telemetr\'ia peri\'odica con un intervalo de env\'io fijo. El objetivo es validar la instrumentaci\'on, la configuraci\'on de ThingsBoard y la estabilidad de la red HaLow en condiciones de baja carga.
+  \item \textbf{Prueba 2 -- escalamiento del n\'umero de dispositivos}: se incrementa el n\'umero de nodos a \num{50}, \num{100}, \num{200} y \num{400} dispositivos, manteniendo constantes el intervalo de env\'io y el \emph{payload}. Este escenario permite identificar el comportamiento de la plataforma frente al aumento de concurrencia.
+  \item \textbf{Prueba 3 -- variaci\'on del intervalo de env\'io}: se fijan \num{200} dispositivos y se modifican los intervalos de publicaci\'on (\SI{10}{\second}, \SI{5}{\second}, \SI{2}{\second} y \SI{1}{\second}). El objetivo es analizar el compromiso entre frecuencia de muestreo, latencia y carga sobre el \emph{broker}.
+  \item \textbf{Prueba 4 -- tama\~no del \emph{payload}}: con \num{200} nodos y un intervalo de env\'io constante se env\'ian mensajes con tres perfiles de tama\~no (\textit{small}, \textit{medium}, \textit{large}), con el fin de observar el efecto del volumen de datos sobre la latencia y el \emph{throughput}.
+  \item \textbf{Prueba 5 -- l\'imite de tasa}: se comparan dos modos de operaci\'on con \num{200} dispositivos: env\'io directo (\textit{sin\_aggregate}) y una configuraci\'on con l\'imite expl\'icito de tasa (\textit{con\_rate\_limit}), evaluando el impacto sobre el n\'umero de mensajes procesados y la latencia.
+  \item \textbf{Prueba 6 -- escenario as\'incrono}: se eval\'uan configuraciones en las que distintos lotes de dispositivos se activan en momentos diferentes (\texttt{async\_n200\_s800}, \texttt{async\_n400\_s0}, \texttt{async\_n400\_s400}), reproduciendo una situaci\'on m\'as pr\'oxima a despliegues reales donde no todos los nodos se conectan simult\'aneamente.
+\end{enumerate}
+
+En todos los escenarios se mantuvo la calidad de servicio MQTT en nivel~1 y se registraron las m\'etricas de rendimiento tanto del simulador como de la red HaLow, permitiendo as\'i correlacionar el comportamiento de la capa de aplicaci\'on con el estado del enlace inal\'ambrico.

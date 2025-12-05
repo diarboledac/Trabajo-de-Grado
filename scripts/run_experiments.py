@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime
@@ -15,6 +16,47 @@ RUN_SUITE = SCRIPTS_DIR / "run_stress_suite.py"
 METRICS_DIR = ROOT / "data" / "metrics"
 REPORTS_DIR = METRICS_DIR / "reports"
 MANIFEST = REPORTS_DIR / "manifest.json"
+
+
+def short_label(prefix: str) -> str:
+    """Crea una etiqueta compacta para usar en nombres de archivo."""
+    label = prefix.lower()
+    if label.startswith("prueba"):
+        label = "p" + label[len("prueba") :]
+    label = label.replace("_", "-")
+    replacements = {
+        "sin-aggregate": "sa",
+        "con-rate-limit": "rl",
+        "medium": "m",
+        "small": "s",
+        "large": "l",
+    }
+    for old, new in replacements.items():
+        label = label.replace(old, new)
+    return label.strip("-")
+
+
+def extract_core(name: str) -> str:
+    """Extrae timestamp y n de nodos para construir ids cortos."""
+    m = re.search(r"(\d{8}-\d{6})(?:-s\d+)?(?:-n(\d+))?", name)
+    if m:
+        ts = m.group(1)
+        nodos = m.group(2)
+        if nodos:
+            return f"{ts}-n{int(nodos)}"
+        return ts
+    return name
+
+
+def move_to(src: Path, dest: Path) -> Path:
+    """Renombra/mueve el archivo a dest, sobrescribiendo si ya existe."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if src.resolve() == dest.resolve():
+        return dest
+    if dest.exists():
+        dest.unlink()
+    src.rename(dest)
+    return dest
 
 
 def snapshot(paths: Iterable[Path]) -> set[Path]:
@@ -44,48 +86,102 @@ def save_manifest(entries: list) -> None:
 
 
 def tag_artifacts(prefix: str, new_csv: set[Path], new_reports: set[Path]) -> None:
-    """Renombra/copias artefactos nuevos con prefijo de escenario y actualiza manifest."""
+    """Renombra/mueve artefactos nuevos con nombres cortos y actualiza manifest."""
     manifest = load_manifest()
-    halow_csv = None
+    short = short_label(prefix)
+
+    def core_from_path(path: Path) -> str:
+        stem = path.stem
+        if stem.startswith("halow_"):
+            stem = stem.replace("halow_", "", 1)
+        stem = stem.replace("-report", "").replace("-overview", "").replace("-metrics", "")
+        return extract_core(stem)
+
+    metrics_by_core: dict[str, Path] = {}
+    halow_by_core: dict[str, Path] = {}
     for csv_path in new_csv:
-        if csv_path.name.startswith("halow_"):
-            halow_csv = csv_path
-            continue
-        target = csv_path.with_name(f"{prefix}_{csv_path.name}")
-        if not target.exists():
-            target.write_bytes(csv_path.read_bytes())
+        core = core_from_path(csv_path)
+        if csv_path.name.startswith("halow_") or csv_path.name.endswith("-halow.csv"):
+            halow_by_core[core] = csv_path
+        else:
+            metrics_by_core[core] = csv_path
+
     report_pairs = {}
     for tex in (p for p in new_reports if p.suffix == ".tex"):
-        stem = tex.stem.replace("-report", "")
-        png = tex.with_name(f"{stem}-overview.png")
-        report_pairs[tex] = png if png in new_reports else None
-    for tex, png in report_pairs.items():
-        tex_target = tex.with_name(f"{prefix}_{tex.name}")
-        if not tex_target.exists():
-            tex_target.write_bytes(tex.read_bytes())
-        png_target = None
+        core = core_from_path(tex)
+        png = tex.with_name(f"{tex.stem.replace('-report', '')}-overview.png")
+        report_pairs[core] = (tex, png if png in new_reports else None)
+
+    for core, (tex, png) in report_pairs.items():
+        session_id = f"{short}-{core}"
+        tex_target = REPORTS_DIR / f"{session_id}-report.tex"
+        tex_final = move_to(tex, tex_target)
+
+        png_target = REPORTS_DIR / f"{session_id}-overview.png" if png else None
         if png and png.exists():
-            png_target = png.with_name(f"{prefix}_{png.name}")
-            if not png_target.exists():
-                png_target.write_bytes(png.read_bytes())
-        if halow_csv and halow_csv.exists():
-            halow_target = halow_csv.with_name(f"{prefix}_{halow_csv.name}")
-            if not halow_target.exists():
-                halow_target.write_bytes(halow_csv.read_bytes())
-        else:
-            halow_target = halow_csv
+            move_to(png, png_target)  # type: ignore[arg-type]
+
+        metrics_src = metrics_by_core.pop(core, None)
+        metrics_target = None
+        if metrics_src:
+            metrics_target = METRICS_DIR / f"{session_id}-metrics.csv"
+            move_to(metrics_src, metrics_target)
+
+        halow_src = halow_by_core.pop(core, None)
+        halow_target = None
+        if halow_src:
+            halow_target = METRICS_DIR / f"{session_id}-halow.csv"
+            move_to(halow_src, halow_target)
 
         manifest.append(
             {
                 "scenario": prefix,
-                "session": tex_target.stem.replace("-report", ""),
-                "report_tex": tex_target.as_posix(),
-                "report_png": png_target.as_posix() if png_target else None,
-                "csv": str(METRICS_DIR / tex.stem.replace("-report", "-metrics.csv")),
+                "session": session_id,
+                "report_tex": tex_final.as_posix(),
+                "report_png": png_target.as_posix() if png_target and png_target.exists() else None,
+                "csv": metrics_target.as_posix() if metrics_target else None,
                 "halow_csv": halow_target.as_posix() if halow_target else None,
                 "timestamp": datetime.now().isoformat(),
             }
         )
+
+    for core, metrics_src in metrics_by_core.items():
+        session_id = f"{short}-{core}"
+        metrics_target = METRICS_DIR / f"{session_id}-metrics.csv"
+        metrics_final = move_to(metrics_src, metrics_target)
+        halow_src = halow_by_core.pop(core, None)
+        halow_target = None
+        if halow_src:
+            halow_target = METRICS_DIR / f"{session_id}-halow.csv"
+            move_to(halow_src, halow_target)
+        manifest.append(
+            {
+                "scenario": prefix,
+                "session": session_id,
+                "report_tex": None,
+                "report_png": None,
+                "csv": metrics_final.as_posix(),
+                "halow_csv": halow_target.as_posix() if halow_target else None,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
+
+    for core, halow_src in halow_by_core.items():
+        session_id = f"{short}-{core}"
+        halow_target = METRICS_DIR / f"{session_id}-halow.csv"
+        halow_final = move_to(halow_src, halow_target)
+        manifest.append(
+            {
+                "scenario": prefix,
+                "session": session_id,
+                "report_tex": None,
+                "report_png": None,
+                "csv": None,
+                "halow_csv": halow_final.as_posix(),
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
+
     save_manifest(manifest)
 
 
@@ -200,7 +296,7 @@ def run_prueba_6() -> None:
     run_suite(
         [
             "--duration",
-            "7200",
+            "1800",
             "--device-count",
             "1000",
             "--interval",

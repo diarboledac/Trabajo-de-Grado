@@ -1,0 +1,2 @@
+config,nodos,exitos,fallidos,mensajes,perdida_pct,duracion_s,lat_prom_ms,lat_min_ms,lat_max_ms,throughput_msg_s,bandwidth_mbps,valida
+async-run-20251205-203826-s00400-n00400,400,143455.0,0.0,143455.0,0.0,1800.03161,20.285121052631577,18.9432,21.7197,79.8439052631579,0.10092331578947368,True

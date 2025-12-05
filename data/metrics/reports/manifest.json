@@ -1,686 +1,281 @@
 [
   {
     "scenario": "Prueba1",
-    "session": "Prueba1_20251204-012124-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-012124-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-012124-s00000-n00020-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-012124-s00000-n00020-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba1_halow_20251204-012124.csv",
-    "timestamp": "2025-12-03T20:26:27.367025"
-  },
-  {
-    "scenario": "20251204-012124-s00000-n00020",
-    "session": "20251204-012124-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-012124-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-012124-s00000-n00020-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-012124-s00000-n00020-metrics.csv",
+    "session": "p1-20251205-190646-n20",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p1-20251205-190646-n20-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p1-20251205-190646-n20-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p1-20251205-190646-n20-metrics.csv",
     "halow_csv": null,
-    "timestamp": "2025-12-03T20:25:53.660522"
+    "timestamp": "2025-12-05T14:12:16.152340"
+  },
+  {
+    "scenario": "Prueba1",
+    "session": "p1-20251205-190646",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p1-20251205-190646-halow.csv",
+    "timestamp": "2025-12-05T14:12:16.154362"
   },
   {
     "scenario": "Prueba2_n50",
-    "session": "Prueba2_n50_20251204-014425-s00000-n00050",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n50_20251204-014425-s00000-n00050-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n50_20251204-014425-s00000-n00050-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-014425-s00000-n00050-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n50_halow_20251204-014425.csv",
-    "timestamp": "2025-12-03T20:50:13.215651"
-  },
-  {
-    "scenario": "Prueba2_n100",
-    "session": "Prueba2_n100_20251204-015013-s00000-n00100",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n100_20251204-015013-s00000-n00100-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n100_20251204-015013-s00000-n00100-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-015013-s00000-n00100-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n100_halow_20251204-015013.csv",
-    "timestamp": "2025-12-03T20:55:58.954743"
-  },
-  {
-    "scenario": "Prueba2_n200",
-    "session": "Prueba2_n200_20251204-015559-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n200_20251204-015559-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n200_20251204-015559-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-015559-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n200_halow_20251204-015559.csv",
-    "timestamp": "2025-12-03T21:02:13.017323"
-  },
-  {
-    "scenario": "Prueba2_n400",
-    "session": "Prueba2_n400_20251204-020213-s00000-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n400_20251204-020213-s00000-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n400_20251204-020213-s00000-n00400-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-020213-s00000-n00400-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n400_halow_20251204-020213.csv",
-    "timestamp": "2025-12-03T21:07:43.743590"
-  },
-  {
-    "scenario": "Prueba1",
-    "session": "Prueba1_20251204-021305-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-021305-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-021305-s00000-n00020-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-021305-s00000-n00020-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba1_halow_20251204-021305.csv",
-    "timestamp": "2025-12-03T21:18:10.712850"
-  },
-  {
-    "scenario": "Prueba1",
-    "session": "Prueba1_20251204-023144-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-023144-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-023144-s00000-n00020-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-023144-s00000-n00020-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba1_halow_20251204-023144.csv",
-    "timestamp": "2025-12-03T21:36:50.770429"
-  },
-  {
-    "scenario": "Prueba1",
-    "session": "Prueba1_20251204-024447-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-024447-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-024447-s00000-n00020-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-024447-s00000-n00020-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba1_halow_20251204-024447.csv",
-    "timestamp": "2025-12-03T21:49:51.595812"
-  },
-  {
-    "scenario": "Prueba6",
-    "session": "Prueba6_async-run-20251204-025154-s00000-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba6_async-run-20251204-025154-s00000-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba6_async-run-20251204-025154-s00000-n00400-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\async-run-20251204-025154-s00000-n00400-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba6_halow_20251204-024952.csv",
-    "timestamp": "2025-12-03T21:55:31.194013"
-  },
-  {
-    "scenario": "Prueba6",
-    "session": "Prueba6_async-run-20251204-025154-s00400-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba6_async-run-20251204-025154-s00400-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba6_async-run-20251204-025154-s00400-n00400-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\async-run-20251204-025154-s00400-n00400-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba6_halow_20251204-024952.csv",
-    "timestamp": "2025-12-03T21:55:31.208038"
-  },
-  {
-    "scenario": "Prueba6",
-    "session": "Prueba6_async-run-20251204-025154-s00800-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba6_async-run-20251204-025154-s00800-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba6_async-run-20251204-025154-s00800-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\async-run-20251204-025154-s00800-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba6_halow_20251204-024952.csv",
-    "timestamp": "2025-12-03T21:55:31.222181"
-  },
-  {
-    "scenario": "Prueba1",
-    "session": "Prueba1_20251204-030943-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-030943-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba1_20251204-030943-s00000-n00020-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-030943-s00000-n00020-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba1_halow_20251204-030943.csv",
-    "timestamp": "2025-12-03T22:14:51.272341"
+    "session": "p2-n50-20251205-191216-n50",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n50-20251205-191216-n50-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n50-20251205-191216-n50-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n50-20251205-191216-n50-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T14:18:08.629070"
   },
   {
     "scenario": "Prueba2_n50",
-    "session": "Prueba2_n50_20251204-031452-s00000-n00050",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n50_20251204-031452-s00000-n00050-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n50_20251204-031452-s00000-n00050-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-031452-s00000-n00050-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n50_halow_20251204-031452.csv",
-    "timestamp": "2025-12-03T22:21:10.927393"
+    "session": "p2-n50-20251205-191216",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n50-20251205-191216-halow.csv",
+    "timestamp": "2025-12-05T14:18:08.632016"
   },
   {
     "scenario": "Prueba2_n100",
-    "session": "Prueba2_n100_20251204-032111-s00000-n00100",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n100_20251204-032111-s00000-n00100-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n100_20251204-032111-s00000-n00100-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-032111-s00000-n00100-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n100_halow_20251204-032111.csv",
-    "timestamp": "2025-12-03T22:27:14.729667"
+    "session": "p2-n100-20251205-191809-n100",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n100-20251205-191809-n100-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n100-20251205-191809-n100-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n100-20251205-191809-n100-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T14:24:25.180080"
+  },
+  {
+    "scenario": "Prueba2_n100",
+    "session": "p2-n100-20251205-191809",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n100-20251205-191809-halow.csv",
+    "timestamp": "2025-12-05T14:24:25.181508"
   },
   {
     "scenario": "Prueba2_n200",
-    "session": "Prueba2_n200_20251204-032715-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n200_20251204-032715-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n200_20251204-032715-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-032715-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n200_halow_20251204-032715.csv",
-    "timestamp": "2025-12-03T22:33:12.287251"
+    "session": "p2-n200-20251205-192425-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n200-20251205-192425-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n200-20251205-192425-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n200-20251205-192425-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T14:30:01.393246"
+  },
+  {
+    "scenario": "Prueba2_n200",
+    "session": "p2-n200-20251205-192425",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n200-20251205-192425-halow.csv",
+    "timestamp": "2025-12-05T14:30:01.394897"
   },
   {
     "scenario": "Prueba2_n400",
-    "session": "Prueba2_n400_20251204-033312-s00000-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n400_20251204-033312-s00000-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n400_20251204-033312-s00000-n00400-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-033312-s00000-n00400-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n400_halow_20251204-033312.csv",
-    "timestamp": "2025-12-03T22:39:11.982284"
+    "session": "p2-n400-20251205-193002-n400",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n400-20251205-193002-n400-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n400-20251205-193002-n400-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n400-20251205-193002-n400-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T14:35:57.252038"
+  },
+  {
+    "scenario": "Prueba2_n400",
+    "session": "p2-n400-20251205-193002",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n400-20251205-193002-halow.csv",
+    "timestamp": "2025-12-05T14:35:57.253544"
   },
   {
     "scenario": "Prueba3_int10",
-    "session": "Prueba3_int10_20251204-033912-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int10_20251204-033912-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int10_20251204-033912-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-033912-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba3_int10_halow_20251204-033912.csv",
-    "timestamp": "2025-12-03T22:44:35.297910"
-  },
-  {
-    "scenario": "Prueba3_int5",
-    "session": "Prueba3_int5_20251204-034435-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int5_20251204-034435-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int5_20251204-034435-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-034435-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba3_int5_halow_20251204-034435.csv",
-    "timestamp": "2025-12-03T22:50:11.822869"
-  },
-  {
-    "scenario": "Prueba3_int2",
-    "session": "Prueba3_int2_20251204-035012-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int2_20251204-035012-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int2_20251204-035012-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-035012-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba3_int2_halow_20251204-035012.csv",
-    "timestamp": "2025-12-03T22:56:12.237934"
-  },
-  {
-    "scenario": "Prueba3_int1",
-    "session": "Prueba3_int1_20251204-035612-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int1_20251204-035612-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int1_20251204-035612-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-035612-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba3_int1_halow_20251204-035612.csv",
-    "timestamp": "2025-12-03T23:02:12.952842"
-  },
-  {
-    "scenario": "Prueba4_small",
-    "session": "Prueba4_small_20251204-040213-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_small_20251204-040213-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_small_20251204-040213-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-040213-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba4_small_halow_20251204-040213.csv",
-    "timestamp": "2025-12-03T23:08:15.943462"
-  },
-  {
-    "scenario": "Prueba4_medium",
-    "session": "Prueba4_medium_20251204-040816-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_medium_20251204-040816-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_medium_20251204-040816-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-040816-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba4_medium_halow_20251204-040816.csv",
-    "timestamp": "2025-12-03T23:14:12.915536"
-  },
-  {
-    "scenario": "Prueba4_large",
-    "session": "Prueba4_large_20251204-041413-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_large_20251204-041413-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_large_20251204-041413-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-041413-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba4_large_halow_20251204-041413.csv",
-    "timestamp": "2025-12-03T23:20:12.530819"
-  },
-  {
-    "scenario": "Prueba5_sin_aggregate",
-    "session": "Prueba5_sin_aggregate_20251204-042013-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba5_sin_aggregate_20251204-042013-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba5_sin_aggregate_20251204-042013-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-042013-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba5_sin_aggregate_halow_20251204-042013.csv",
-    "timestamp": "2025-12-03T23:26:45.211114"
-  },
-  {
-    "scenario": "Prueba5_con_rate_limit",
-    "session": "Prueba5_con_rate_limit_20251204-042645-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba5_con_rate_limit_20251204-042645-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba5_con_rate_limit_20251204-042645-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-042645-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba5_con_rate_limit_halow_20251204-042645.csv",
-    "timestamp": "2025-12-03T23:33:20.183780"
-  },
-  {
-    "scenario": "Prueba2_n50",
-    "session": "Prueba2_n50_20251204-043321-s00000-n00050",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n50_20251204-043321-s00000-n00050-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n50_20251204-043321-s00000-n00050-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-043321-s00000-n00050-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n50_halow_20251204-043321.csv",
-    "timestamp": "2025-12-03T23:39:13.191622"
-  },
-  {
-    "scenario": "Prueba2_n100",
-    "session": "Prueba2_n100_20251204-043913-s00000-n00100",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n100_20251204-043913-s00000-n00100-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n100_20251204-043913-s00000-n00100-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-043913-s00000-n00100-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n100_halow_20251204-043913.csv",
-    "timestamp": "2025-12-03T23:44:54.931677"
-  },
-  {
-    "scenario": "Prueba2_n200",
-    "session": "Prueba2_n200_20251204-044455-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n200_20251204-044455-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n200_20251204-044455-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-044455-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n200_halow_20251204-044455.csv",
-    "timestamp": "2025-12-03T23:51:11.625952"
-  },
-  {
-    "scenario": "Prueba2_n400",
-    "session": "Prueba2_n400_20251204-045112-s00000-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n400_20251204-045112-s00000-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba2_n400_20251204-045112-s00000-n00400-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-045112-s00000-n00400-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba2_n400_halow_20251204-045112.csv",
-    "timestamp": "2025-12-03T23:57:14.879808"
+    "session": "p3-int10-20251205-193558-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p3-int10-20251205-193558-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p3-int10-20251205-193558-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p3-int10-20251205-193558-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T14:41:56.697352"
   },
   {
     "scenario": "Prueba3_int10",
-    "session": "Prueba3_int10_20251204-045715-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int10_20251204-045715-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int10_20251204-045715-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-045715-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba3_int10_halow_20251204-045715.csv",
-    "timestamp": "2025-12-04T00:03:16.942475"
+    "session": "p3-int10-20251205-193558",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p3-int10-20251205-193558-halow.csv",
+    "timestamp": "2025-12-05T14:41:56.698863"
   },
   {
     "scenario": "Prueba3_int5",
-    "session": "Prueba3_int5_20251204-050317-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int5_20251204-050317-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int5_20251204-050317-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-050317-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba3_int5_halow_20251204-050317.csv",
-    "timestamp": "2025-12-04T00:09:15.234733"
+    "session": "p3-int5-20251205-194157-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p3-int5-20251205-194157-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p3-int5-20251205-194157-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p3-int5-20251205-194157-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T14:48:00.872991"
+  },
+  {
+    "scenario": "Prueba3_int5",
+    "session": "p3-int5-20251205-194157",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p3-int5-20251205-194157-halow.csv",
+    "timestamp": "2025-12-05T14:48:00.874803"
   },
   {
     "scenario": "Prueba3_int2",
-    "session": "Prueba3_int2_20251204-050915-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int2_20251204-050915-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int2_20251204-050915-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-050915-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba3_int2_halow_20251204-050915.csv",
-    "timestamp": "2025-12-04T00:14:53.396671"
+    "session": "p3-int2-20251205-194801-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p3-int2-20251205-194801-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p3-int2-20251205-194801-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p3-int2-20251205-194801-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T14:55:02.902215"
+  },
+  {
+    "scenario": "Prueba3_int2",
+    "session": "p3-int2-20251205-194801",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p3-int2-20251205-194801-halow.csv",
+    "timestamp": "2025-12-05T14:55:02.903798"
   },
   {
     "scenario": "Prueba3_int1",
-    "session": "Prueba3_int1_20251204-051454-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int1_20251204-051454-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba3_int1_20251204-051454-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-051454-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba3_int1_halow_20251204-051454.csv",
-    "timestamp": "2025-12-04T00:21:14.990593"
+    "session": "p3-int1-20251205-195503-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p3-int1-20251205-195503-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p3-int1-20251205-195503-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p3-int1-20251205-195503-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T15:02:05.661451"
+  },
+  {
+    "scenario": "Prueba3_int1",
+    "session": "p3-int1-20251205-195503",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p3-int1-20251205-195503-halow.csv",
+    "timestamp": "2025-12-05T15:02:05.663047"
   },
   {
     "scenario": "Prueba4_small",
-    "session": "Prueba4_small_20251204-052115-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_small_20251204-052115-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_small_20251204-052115-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-052115-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba4_small_halow_20251204-052115.csv",
-    "timestamp": "2025-12-04T00:27:15.052430"
+    "session": "p4-s-20251205-200206-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p4-s-20251205-200206-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p4-s-20251205-200206-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p4-s-20251205-200206-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T15:08:59.543992"
+  },
+  {
+    "scenario": "Prueba4_small",
+    "session": "p4-s-20251205-200206",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p4-s-20251205-200206-halow.csv",
+    "timestamp": "2025-12-05T15:08:59.545899"
   },
   {
     "scenario": "Prueba4_medium",
-    "session": "Prueba4_medium_20251204-052715-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_medium_20251204-052715-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_medium_20251204-052715-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-052715-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba4_medium_halow_20251204-052715.csv",
-    "timestamp": "2025-12-04T00:33:17.265687"
+    "session": "p4-m-20251205-200900-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p4-m-20251205-200900-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p4-m-20251205-200900-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p4-m-20251205-200900-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T15:15:01.339046"
+  },
+  {
+    "scenario": "Prueba4_medium",
+    "session": "p4-m-20251205-200900",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p4-m-20251205-200900-halow.csv",
+    "timestamp": "2025-12-05T15:15:01.340597"
   },
   {
     "scenario": "Prueba4_large",
-    "session": "Prueba4_large_20251204-053317-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_large_20251204-053317-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba4_large_20251204-053317-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-053317-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba4_large_halow_20251204-053317.csv",
-    "timestamp": "2025-12-04T00:39:12.278415"
+    "session": "p4-l-20251205-201501-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p4-l-20251205-201501-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p4-l-20251205-201501-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p4-l-20251205-201501-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T15:21:01.021295"
+  },
+  {
+    "scenario": "Prueba4_large",
+    "session": "p4-l-20251205-201501",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p4-l-20251205-201501-halow.csv",
+    "timestamp": "2025-12-05T15:21:01.024183"
   },
   {
     "scenario": "Prueba5_sin_aggregate",
-    "session": "Prueba5_sin_aggregate_20251204-053913-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba5_sin_aggregate_20251204-053913-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba5_sin_aggregate_20251204-053913-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-053913-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba5_sin_aggregate_halow_20251204-053913.csv",
-    "timestamp": "2025-12-04T00:46:14.062322"
+    "session": "p5-sa-20251205-202101-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p5-sa-20251205-202101-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p5-sa-20251205-202101-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p5-sa-20251205-202101-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T15:29:02.265490"
+  },
+  {
+    "scenario": "Prueba5_sin_aggregate",
+    "session": "p5-sa-20251205-202101",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p5-sa-20251205-202101-halow.csv",
+    "timestamp": "2025-12-05T15:29:02.267453"
   },
   {
     "scenario": "Prueba5_con_rate_limit",
-    "session": "Prueba5_con_rate_limit_20251204-054614-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba5_con_rate_limit_20251204-054614-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/Prueba5_con_rate_limit_20251204-054614-s00000-n00200-overview.png",
-    "csv": "D:\\2025-1\\Trabajo-de-Grado\\data\\metrics\\20251204-054614-s00000-n00200-metrics.csv",
-    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/Prueba5_con_rate_limit_halow_20251204-054614.csv",
-    "timestamp": "2025-12-04T00:52:43.499756"
+    "session": "p5-rl-20251205-202902-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p5-rl-20251205-202902-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p5-rl-20251205-202902-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p5-rl-20251205-202902-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T15:36:06.182639"
   },
   {
-    "scenario": "20251204-014425-s00000-n00050",
-    "session": "20251204-014425-s00000-n00050",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-014425-s00000-n00050-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-014425-s00000-n00050-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-014425-s00000-n00050-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T20:49:38.683707"
+    "scenario": "Prueba5_con_rate_limit",
+    "session": "p5-rl-20251205-202902",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p5-rl-20251205-202902-halow.csv",
+    "timestamp": "2025-12-05T15:36:06.184264"
   },
   {
-    "scenario": "20251204-015013-s00000-n00100",
-    "session": "20251204-015013-s00000-n00100",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-015013-s00000-n00100-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-015013-s00000-n00100-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-015013-s00000-n00100-metrics.csv",
+    "scenario": "Prueba6",
+    "session": "p6-20251205-203826-n400",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p6-20251205-203826-n400-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p6-20251205-203826-n400-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p6-20251205-203826-n400-metrics.csv",
     "halow_csv": null,
-    "timestamp": "2025-12-03T20:55:25.398068"
+    "timestamp": "2025-12-05T16:09:11.032460"
   },
   {
-    "scenario": "20251204-015559-s00000-n00200",
-    "session": "20251204-015559-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-015559-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-015559-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-015559-s00000-n00200-metrics.csv",
+    "scenario": "Prueba6",
+    "session": "p6-20251205-203826-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p6-20251205-203826-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p6-20251205-203826-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p6-20251205-203826-n200-metrics.csv",
     "halow_csv": null,
-    "timestamp": "2025-12-03T21:01:38.712511"
+    "timestamp": "2025-12-05T16:09:11.038941"
   },
   {
-    "scenario": "20251204-020213-s00000-n00400",
-    "session": "20251204-020213-s00000-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-020213-s00000-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-020213-s00000-n00400-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-020213-s00000-n00400-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T21:07:08.903929"
-  },
-  {
-    "scenario": "20251204-021305-s00000-n00020",
-    "session": "20251204-021305-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-021305-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-021305-s00000-n00020-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-021305-s00000-n00020-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T21:17:35.873319"
-  },
-  {
-    "scenario": "20251204-023144-s00000-n00020",
-    "session": "20251204-023144-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-023144-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-023144-s00000-n00020-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-023144-s00000-n00020-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T21:36:15.352703"
-  },
-  {
-    "scenario": "20251204-024447-s00000-n00020",
-    "session": "20251204-024447-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-024447-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-024447-s00000-n00020-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-024447-s00000-n00020-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T21:49:16.765055"
-  },
-  {
-    "scenario": "20251204-030943-s00000-n00020",
-    "session": "20251204-030943-s00000-n00020",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-030943-s00000-n00020-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-030943-s00000-n00020-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-030943-s00000-n00020-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T22:14:15.319464"
-  },
-  {
-    "scenario": "20251204-031452-s00000-n00050",
-    "session": "20251204-031452-s00000-n00050",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-031452-s00000-n00050-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-031452-s00000-n00050-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-031452-s00000-n00050-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T22:20:38.631094"
-  },
-  {
-    "scenario": "20251204-032111-s00000-n00100",
-    "session": "20251204-032111-s00000-n00100",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-032111-s00000-n00100-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-032111-s00000-n00100-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-032111-s00000-n00100-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T22:26:38.807261"
-  },
-  {
-    "scenario": "20251204-032715-s00000-n00200",
-    "session": "20251204-032715-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-032715-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-032715-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-032715-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T22:32:38.639461"
-  },
-  {
-    "scenario": "20251204-033312-s00000-n00400",
-    "session": "20251204-033312-s00000-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-033312-s00000-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-033312-s00000-n00400-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-033312-s00000-n00400-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T22:38:38.654334"
-  },
-  {
-    "scenario": "20251204-033912-s00000-n00200",
-    "session": "20251204-033912-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-033912-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-033912-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-033912-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T22:44:00.215281"
-  },
-  {
-    "scenario": "20251204-034435-s00000-n00200",
-    "session": "20251204-034435-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-034435-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-034435-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-034435-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T22:49:38.669541"
-  },
-  {
-    "scenario": "20251204-035012-s00000-n00200",
-    "session": "20251204-035012-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-035012-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-035012-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-035012-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T22:55:38.689174"
-  },
-  {
-    "scenario": "20251204-035612-s00000-n00200",
-    "session": "20251204-035612-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-035612-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-035612-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-035612-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:01:38.674847"
-  },
-  {
-    "scenario": "20251204-040213-s00000-n00200",
-    "session": "20251204-040213-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-040213-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-040213-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-040213-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:07:38.648919"
-  },
-  {
-    "scenario": "20251204-040816-s00000-n00200",
-    "session": "20251204-040816-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-040816-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-040816-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-040816-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:13:38.634339"
-  },
-  {
-    "scenario": "20251204-041413-s00000-n00200",
-    "session": "20251204-041413-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-041413-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-041413-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-041413-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:19:38.639651"
-  },
-  {
-    "scenario": "20251204-042013-s00000-n00200",
-    "session": "20251204-042013-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-042013-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-042013-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-042013-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:26:10.743368"
-  },
-  {
-    "scenario": "20251204-042645-s00000-n00200",
-    "session": "20251204-042645-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-042645-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-042645-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-042645-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:32:46.188662"
-  },
-  {
-    "scenario": "20251204-043321-s00000-n00050",
-    "session": "20251204-043321-s00000-n00050",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-043321-s00000-n00050-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-043321-s00000-n00050-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-043321-s00000-n00050-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:38:38.642612"
-  },
-  {
-    "scenario": "20251204-043913-s00000-n00100",
-    "session": "20251204-043913-s00000-n00100",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-043913-s00000-n00100-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-043913-s00000-n00100-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-043913-s00000-n00100-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:44:15.169078"
-  },
-  {
-    "scenario": "20251204-044455-s00000-n00200",
-    "session": "20251204-044455-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-044455-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-044455-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-044455-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:50:38.620089"
-  },
-  {
-    "scenario": "20251204-045112-s00000-n00400",
-    "session": "20251204-045112-s00000-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-045112-s00000-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-045112-s00000-n00400-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-045112-s00000-n00400-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T23:56:38.650498"
-  },
-  {
-    "scenario": "20251204-045715-s00000-n00200",
-    "session": "20251204-045715-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-045715-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-045715-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-045715-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-04T00:02:38.623273"
-  },
-  {
-    "scenario": "20251204-050317-s00000-n00200",
-    "session": "20251204-050317-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-050317-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-050317-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-050317-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-04T00:08:38.637177"
-  },
-  {
-    "scenario": "20251204-050915-s00000-n00200",
-    "session": "20251204-050915-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-050915-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-050915-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-050915-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-04T00:14:14.718014"
-  },
-  {
-    "scenario": "20251204-051454-s00000-n00200",
-    "session": "20251204-051454-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-051454-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-051454-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-051454-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-04T00:20:38.733307"
-  },
-  {
-    "scenario": "20251204-052115-s00000-n00200",
-    "session": "20251204-052115-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-052115-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-052115-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-052115-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-04T00:26:38.645271"
-  },
-  {
-    "scenario": "20251204-052715-s00000-n00200",
-    "session": "20251204-052715-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-052715-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-052715-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-052715-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-04T00:32:38.641503"
-  },
-  {
-    "scenario": "20251204-053317-s00000-n00200",
-    "session": "20251204-053317-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-053317-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-053317-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-053317-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-04T00:38:38.633828"
-  },
-  {
-    "scenario": "20251204-053913-s00000-n00200",
-    "session": "20251204-053913-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-053913-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-053913-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-053913-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-04T00:45:38.796486"
-  },
-  {
-    "scenario": "20251204-054614-s00000-n00200",
-    "session": "20251204-054614-s00000-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-054614-s00000-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/20251204-054614-s00000-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/20251204-054614-s00000-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-04T00:52:10.802273"
-  },
-  {
-    "scenario": "async-run-20251204-025154-s00000-n00400",
-    "session": "async-run-20251204-025154-s00000-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/async-run-20251204-025154-s00000-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/async-run-20251204-025154-s00000-n00400-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/async-run-20251204-025154-s00000-n00400-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T21:54:55.089890"
-  },
-  {
-    "scenario": "async-run-20251204-025154-s00400-n00400",
-    "session": "async-run-20251204-025154-s00400-n00400",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/async-run-20251204-025154-s00400-n00400-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/async-run-20251204-025154-s00400-n00400-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/async-run-20251204-025154-s00400-n00400-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T21:54:55.134562"
-  },
-  {
-    "scenario": "async-run-20251204-025154-s00800-n00200",
-    "session": "async-run-20251204-025154-s00800-n00200",
-    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/async-run-20251204-025154-s00800-n00200-report.tex",
-    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/async-run-20251204-025154-s00800-n00200-overview.png",
-    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/async-run-20251204-025154-s00800-n00200-metrics.csv",
-    "halow_csv": null,
-    "timestamp": "2025-12-03T21:54:54.963925"
+    "scenario": "Prueba6",
+    "session": "p6-20251205-203606",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p6-20251205-203606-halow.csv",
+    "timestamp": "2025-12-05T16:09:11.041192"
   }
 ]

@@ -1,69 +1,135 @@
 \section{Resultados}
-Los resultados se consolidaron a partir de los CSV generados por cada corrida, los reportes LaTeX autom\'aticos y los eventos JSONL que describen el comportamiento de cada dispositivo. Con este material se construyen tablas comparativas, gr\'aficos de tendencia y res\'umenes narrativos que permiten contrastar escenarios de baja, media y alta carga.
+En esta secci\'on se presentan los resultados obtenidos a partir de seis escenarios experimentales ejecutados sobre la plataforma ThingsBoard conectada a la red IEEE~802.11ah (HaLow). Cada prueba explora un par\'ametro distinto de carga o configuraci\'on ---n\'umero de dispositivos, intervalo de env\'io, tama\~no del \emph{payload}, l\'imites de tasa y concurrencia as\'incrona--- con el objetivo de delimitar la regi\'on de operaci\'on segura del sistema sin degradar la calidad de servicio percibida por los dispositivos simulados.
 
-La \Cref{tab:resumen-cargas} resume seis corridas representativas. Las dos primeras corresponden a escenarios de baja y media carga; las siguientes exploran condiciones de saturaci\'on progresiva y un escenario optimizado tras aislar los recursos del broker, y la fila correspondiente a 1000 clientes recoge la corrida intermedia con intervalo de \SI{5}{\second}.
+En todos los casos se graficaron las m\'etricas principales (latencia promedio, percentil 95, \emph{throughput} y estabilidad de la red HaLow) y se consolidaron res\'umenes num\'ericos a partir de los archivos CSV producidos por los scripts en \texttt{data/metrics/}.
+
+\subsection{Prueba 1: l\'inea base con 20 dispositivos}
+La primera prueba corresponde a una l\'inea base con \num{20} dispositivos simulados, cada uno publicando telemetr\'ia peri\'odica hacia ThingsBoard a trav\'es del broker MQTT expuesto sobre la red HaLow. Esta corrida permite verificar que la instrumentaci\'on funciona correctamente y que, bajo baja concurrencia, el sistema opera sin p\'erdida de mensajes ni latencias excesivas.
+
+La \Cref{tab:prueba1} resume los resultados agregados. Se observa que los \num{20} clientes se mantienen conectados durante aproximadamente \num{162}~\si{\second}, con \num{300} mensajes exitosos y sin publicaciones fallidas. La latencia promedio se sit\'ua en torno a \SI{6.45}{\milli\second}, con un percentil 95 por debajo de \SI{10}{\milli\second}, mientras que el \emph{throughput} agregado es cercano a \SI{1.7}{\text{msg/s}}. La capa f\'isica HaLow presenta un RSSI promedio de aproximadamente \SI{-24}{\decibelm} y niveles de ruido alrededor de \SI{-81}{\decibelm}, lo que indica un enlace c\'omodo lejos del umbral de sensibilidad.
 
 \begin{table}[!t]
 \centering
-\caption{Resumen de corridas experimentales seleccionadas}
-\label{tab:resumen-cargas}
-\begin{tabular}{@{}l S[table-format=5.0] S[table-format=6.2] S[table-format=6.0] S[table-format=3.2] S[table-format=3.2]@{}}
+\caption{Resumen de la prueba 1 (l\'inea base con 20 dispositivos).}
+\label{tab:prueba1}
+\begin{tabular}{@{}lrrrrrr@{}}
 \toprule
-Identificador & {Clientes} & {Duraci\'on (\si{\second})} & {Mensajes} & {Lat. prom. (\si{\milli\second})} & {Throughput (msg/s)} \\
+Configuraci\'on & Dispositivos & Duraci\'on (s) & Mensajes exitosos & Latencia prom. (ms) & Throughput (msg/s) \\
 \midrule
-20251029-222301 & 20 & 120.02 & 2400 & 2.95 & 19.99 \\
-20251021-225317 & 200 & 600.03 & 15000 & 4.94 & 15.62 \\
-20251029-231641 & 400 & 120.16 & 46164 & 23.01 & 372.75 \\
-20251029-232925 & 400 & 120.10 & 36443 & 184.47 & 322.23 \\
-20251022-221137 & 500 & 600.08 & 297581 & 7.22 & 494.86 \\
-20251115-170057 & 1000 & 600.09 & 120000 & 7.97 & 199.97 \\
+n20 & 20 & 162.38 & 300 & 6.45 & 1.70 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-La \Cref{fig:latencia-promedio} grafica la evoluci\'on del promedio de latencia y del throughput seg\'un el n\'umero de clientes concurrentes. El c\'odigo de agregaci\'on que produce estos puntos se recoge en el Ap\'endice~\ref{app:agregacion} y se puede ejecutar sobre el repositorio para regenerar la figura de forma automatizada.
+\subsection{Prueba 2: escalamiento del n\'umero de dispositivos}
+La segunda prueba analiza el impacto de incrementar el n\'umero de dispositivos concurrentes manteniendo constantes el intervalo de env\'io y el tama\~no del \emph{payload}. Se consideran cuatro configuraciones: \num{50}, \num{100}, \num{200} y \num{400} dispositivos activos en paralelo.
 
-\begin{figure}[!t]
+En todos los casos la duraci\'on de la simulaci\'on se mantiene cercana a \num{192}~\si{\second}. La \Cref{tab:prueba2} presenta los resultados agregados. Se aprecia un crecimiento casi lineal del \emph{throughput} ---de aproximadamente \SI{8.6}{\text{msg/s}} con \num{50} clientes hasta alrededor de \SI{69}{\text{msg/s}} con \num{400} dispositivos--- sin p\'erdida de mensajes ni desconexiones de clientes.
+
+La latencia promedio se mantiene por debajo de \SI{5}{\milli\second} hasta \num{100} dispositivos, aumenta hasta unos \SI{11.4}{\milli\second} en la configuraci\'on de \num{200} clientes y desciende nuevamente a alrededor de \SI{6.1}{\milli\second} con \num{400} dispositivos. El percentil 95 de latencia alcanza un m\'aximo de aproximadamente \SI{37}{\milli\second} en la configuraci\'on intermedia de \num{200} nodos, pero sin superar en ning\'un caso valores que comprometan el uso de ThingsBoard para telemetr\'ia peri\'odica.
+
+Desde la perspectiva de la red HaLow, el RSSI promedio oscila en torno a \SI{-32}{\decibelm} con niveles de ruido cercanos a \SI{-81}{\decibelm}, y las tasas de transmisi\'on se mantienen alrededor de \SI{14.5}{\mega\bit\per\second}, sin evidencias de saturaci\'on en la capa de enlace.
+
+\begin{table}[!t]
 \centering
-\begin{tikzpicture}
-\begin{axis}[
-  width=\linewidth,
-  height=0.58\linewidth,
-  xmin=0,
-  xmax=1000,
-  xlabel={Clientes concurrentes},
-  ylabel={Latencia promedio (\si{\milli\second})},
-  xtick={0,200,400,600,800,1000},
-  ytick={0,50,100,150,200},
-  ymin=0,
-  ymax=200,
-  grid=both,
-  legend style={at={(0.5,1.25)},anchor=south,legend columns=2},
-  legend cell align=left
-]
-\addplot[color=blue,mark=*] coordinates {(20,3.03)(100,4.39)(200,13.62)(400,60.24)(500,5.97)(1000,7.97)};
-\addlegendentry{Latencia promedio}
-\end{axis}
-\begin{axis}[
-  width=\linewidth,
-  height=0.58\linewidth,
-  xmin=0,
-  xmax=1000,
-  axis y line*=right,
-  axis x line=none,
-  ylabel={Throughput promedio (msg/s)},
-  ytick={0,100,200,300,400},
-  ymin=0,
-  ymax=420,
-  legend style={at={(0.5,1.12)},anchor=south,legend columns=2},
-  legend cell align=left
-]
-\addplot[color=orange,mark=square*] coordinates {(20,19.99)(100,13.16)(200,115.80)(400,371.85)(500,272.43)(1000,199.97)};
-\addlegendentry{Throughput promedio}
-\end{axis}
-\end{tikzpicture}
-\caption{Relaci\'on entre clientes concurrentes, latencia y throughput a partir de promedios agregados.}
-\label{fig:latencia-promedio}
-\end{figure}
+\caption{Prueba 2: escalamiento del n\'umero de dispositivos conectados.}
+\label{tab:prueba2}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Configuraci\'on & Dispositivos & Duraci\'on (s) & Mensajes exitosos & Latencia prom. (ms) & Throughput (msg/s) \\
+\midrule
+n50  &  50 & 192.38 &  1800 &  4.91 &  8.64 \\
+n100 & 100 & 192.36 &  3600 &  4.83 & 17.28 \\
+n200 & 200 & 192.36 &  7200 & 11.38 & 34.55 \\
+n400 & 400 & 192.36 & 14400 &  6.08 & 69.11 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-Para completar el barrido, se ejecut\'o la sesi\'on `async-run-20251115-170057` con \num{1000} dispositivos y un intervalo de publicaci\'on de \SI{5}{\second}, durante unos \SI{600}{\second}. En total se generaron 120\,000 publicaciones exitosas (sin mensajes fallidos), lo que equivale a un promedio de \num{120} mensajes por dispositivo y una tasa agregada cercana a \num{200}~msg/s, con un ancho de banda total de aproximadamente \SI{0.25}{\mega\bit\per\second}. La latencia promedio ponderada se mantuvo en torno a \SI{8}{\milli\second}, con p95 inferiores a \SI{23}{\milli\second} y p99 por debajo de \SI{63}{\milli\second}. Todos los clientes permanecieron conectados durante la ventana de prueba, lo que indica que el servidor ThingsBoard y la red HaLow pueden sostener este nivel de carga sin degradaci\'on apreciable de QoS.
+\subsection{Prueba 3: variaci\'on del intervalo de env\'io}
+En la tercera prueba se fija el n\'umero de dispositivos en \num{200} y se var\'ia el intervalo de env\'io de telemetr\'ia. Se eval\'uan cuatro intervalos: \SI{10}{\second}, \SI{5}{\second}, \SI{2}{\second} y \SI{1}{\second} entre publicaciones.
+
+La \Cref{tab:prueba3} resume los resultados. Al aumentar la frecuencia de env\'io (intervalos m\'as cortos), el \emph{throughput} agregado crece desde alrededor de \SI{17}{\text{msg/s}} con \SI{10}{\second} hasta aproximadamente \SI{172}{\text{msg/s}} con \SI{1}{\second}. Este incremento viene acompa\~nado de cambios en la latencia: con intervalos de \SI{10}{\second} la latencia promedio se sit\'ua cerca de \SI{5.6}{\milli\second}, mientras que para \SI{5}{\second} y \SI{2}{\second} aumenta hasta unos \SI{8.7}{\milli\second} y \SI{9.7}{\milli\second}, respectivamente. Para el intervalo de \SI{1}{\second} la latencia promedio vuelve a valores pr\'oximos a \SI{5.9}{\milli\second}, aunque el percentil 95 puede superar los \SI{14}{\milli\second} en los escenarios m\'as exigentes.
+
+En todos los casos no se registran publicaciones fallidas ni dispositivos ca\'idos, lo que sugiere que, para \num{200} nodos, el l\'imite de carga est\'a m\'as condicionado por el \emph{back-end} de aplicaci\'on y el procesamiento interno de ThingsBoard que por la infraestructura de red HaLow, la cual mantiene tasas de transmisi\'on en torno a \SI{14}{\mega\bit\per\second} con niveles de RSSI estables.
+
+\begin{table}[!t]
+\centering
+\caption{Prueba 3: variaci\'on del intervalo de env\'io con 200 dispositivos.}
+\label{tab:prueba3}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Intervalo & Dispositivos & Duraci\'on (s) & Mensajes exitosos & Latencia prom. (ms) & Throughput (msg/s) \\
+\midrule
+int10 & 200 & 192.35 &  3600 &  5.56 &  17.28 \\
+int5  & 200 & 192.38 &  7200 &  8.67 &  34.54 \\
+int2  & 200 & 192.39 & 18000 &  9.67 &  86.35 \\
+int1  & 200 & 192.38 & 35800 &  5.91 & 172.10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Prueba 4: tama\~no del \emph{payload}}
+La cuarta prueba estudia el efecto del tama\~no del mensaje de telemetr\'ia sobre el comportamiento del sistema. Se mantienen \num{200} dispositivos y un intervalo de env\'io fijo, pero se var\'ia el \emph{payload} entre tres perfiles: \textit{small}, \textit{medium} y \textit{large}.
+
+Los resultados de la \Cref{tab:prueba4} muestran que el n\'umero de mensajes exitosos y la duraci\'on de las corridas se mantienen pr\'acticamente constantes (alrededor de \num{7200} mensajes en unos \num{192}~\si{\second}), mientras que la latencia s\'i se ve afectada. En el perfil \textit{small} la latencia promedio se sit\'ua en torno a \SI{10.4}{\milli\second}, en \textit{medium} aumenta hasta aproximadamente \SI{14.1}{\milli\second} con un percentil 95 cercano a \SI{54}{\milli\second}, y en \textit{large} desciende nuevamente hasta unos \SI{8.5}{\milli\second} con p95 por debajo de \SI{21}{\milli\second}.
+
+Este comportamiento sugiere que el coste computacional asociado al procesamiento de mensajes de tama\~no intermedio puede ser m\'as relevante que el mero volumen de bytes transmitidos, al menos en la configuraci\'on espec\'ifica de ThingsBoard y del simulador empleada.
+
+\begin{table}[!t]
+\centering
+\caption{Prueba 4: variaci\'on del tama\~no de \emph{payload} con 200 dispositivos.}
+\label{tab:prueba4}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Tama\~no & Dispositivos & Duraci\'on (s) & Mensajes exitosos & Latencia prom. (ms) & Throughput (msg/s) \\
+\midrule
+small  & 200 & 192.39 & 7200 & 10.40 & 34.54 \\
+medium & 200 & 192.39 & 7200 & 14.06 & 34.54 \\
+large  & 200 & 192.39 & 7200 &  8.47 & 34.54 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Prueba 5: l\'imite de tasa y agregaci\'on}
+En la quinta prueba se comparan dos estrategias de env\'io con \num{200} dispositivos: una configuraci\'on sin agregaci\'on ni l\'imite expl\'icito de tasa (\textit{sin\_aggregate}) y otra en la que se introducen restricciones de \emph{rate limit} a nivel de \emph{broker} o aplicaci\'on (\textit{con\_rate\_limit}).
+
+Como se aprecia en la \Cref{tab:prueba5}, el escenario sin l\'imite expl\'icito alcanza cerca de \num{9600} mensajes exitosos en unos \num{252}~\si{\second}, con un \emph{throughput} promedio de alrededor de \SI{35}{\text{msg/s}} y una latencia media de \SI{8.2}{\milli\second}. Al activar el \emph{rate limit}, el n\'umero total de mensajes se reduce a aproximadamente \num{4800} y el \emph{throughput} promedio se sit\'ua en torno a \SI{17.7}{\text{msg/s}}, mientras que la latencia aumenta ligeramente hasta unos \SI{10}{\milli\second}.
+
+Desde el punto de vista de calidad de servicio, ambos modos mantienen p\'erdida de mensajes nula; sin embargo, el l\'imite de tasa introduce un compromiso claro entre volumen de telemetr\'ia transmitido y latencia, lo que resulta relevante si se desea proteger al \emph{back-end} frente a picos de carga a costa de reducir la resoluci\'on temporal de las mediciones.
+
+\begin{table}[!t]
+\centering
+\caption{Prueba 5: comparaci\'on entre env\'io directo y l\'imite de tasa (\textit{rate limit}).}
+\label{tab:prueba5}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Modo & Dispositivos & Duraci\'on (s) & Mensajes exitosos & Latencia prom. (ms) & Throughput (msg/s) \\
+\midrule
+sin\_aggregate  & 200 & 252.39 & 9600 &  8.17 & 35.38 \\
+con\_rate\_limit & 200 & 252.40 & 4800 & 10.06 & 17.69 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Prueba 6: escenario as\'incrono con m\'ultiples lotes}
+La \'ultima prueba eval\'ua un escenario m\'as cercano a una situaci\'on real, en el que grupos de dispositivos se activan en momentos distintos. Se consideran tres configuraciones: \texttt{async\_n200\_s800}, con \num{200} nodos y un desplazamiento temporal, y dos variantes con \num{400} dispositivos (\texttt{async\_n400\_s0} y \texttt{async\_n400\_s400}) que representan diferentes patrones de arranque.
+
+Seg\'un la \Cref{tab:prueba6}, la configuraci\'on de \num{200} dispositivos alcanza del orden de \num{12000} mensajes exitosos en \num{180}~\si{\second}, con un \emph{throughput} medio de \SI{66.7}{\text{msg/s}} y latencia promedio cercana a \SI{6.1}{\milli\second}. Las configuraciones con \num{400} dispositivos duplican el \emph{throughput} hasta aproximadamente \SI{133}{\text{msg/s}}, con latencias promedio entre \SI{8.3}{\milli\second} y \SI{8.6}{\milli\second} y percentiles 95 en torno a \SI{25}{\milli\second}.
+
+En todos los casos la p\'erdida de mensajes permanece en cero y no se observan dispositivos marcados como fallidos. La red HaLow opera con un RSSI promedio pr\'oximo a \SI{-21.5}{\decibelm} y tasas de transmisi\'on superiores a \SI{15}{\mega\bit\per\second}, por lo que el cuello de botella del sistema se asocia nuevamente al procesamiento de mensajes en el lado de ThingsBoard y del generador de carga, m\'as que a la capacidad del enlace inal\'ambrico.
+
+\begin{table}[!t]
+\centering
+\caption{Prueba 6: escenario as\'incrono con m\'ultiples lotes de dispositivos.}
+\label{tab:prueba6}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Configuraci\'on & Dispositivos & Duraci\'on (s) & Mensajes exitosos & Latencia prom. (ms) & Throughput (msg/s) \\
+\midrule
+async\_n200\_s800  & 200 & 180.03 & 12000 &  6.09 & 66.67 \\
+async\_n400\_s0    & 400 & 180.03 & 24000 &  8.36 & 133.26 \\
+async\_n400\_s400  & 400 & 180.03 & 24000 &  8.55 & 133.32 \\
+\bottomrule
+\end{tabular}
+\end{table}

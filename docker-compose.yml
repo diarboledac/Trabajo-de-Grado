@@ -12,5 +12,6 @@ services:
       python3 scripts/mqtt/run_stress_suite.py
       --device-count 20
       --duration 120
-      --deactivate-after
+      --deactivate-after 120s
+      --host http://app:8000
     tty: true

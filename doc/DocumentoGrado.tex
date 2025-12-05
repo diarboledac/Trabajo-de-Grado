@@ -14,6 +14,9 @@
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 \sisetup{output-decimal-marker={,}}
+% Unidad personalizada para dBm
+\DeclareSIUnit\dBm{\text{dBm}}
+\DeclareSIUnit\decibelm{\dBm}
 \crefname{figure}{figura}{figuras}
 \Crefname{figure}{Figura}{Figuras}
 \crefname{table}{tabla}{tablas}
@@ -65,6 +68,7 @@ ThingsBoard; Internet of Things; MQTT; load testing; HaLow networks; telemetry.
 
 \renewcommand{\contentsname}{\'Indice / Table of contents}
 \tableofcontents
+\input{chapters/listas}
 \bigskip
 
 \input{chapters/intro}
@@ -73,6 +77,7 @@ ThingsBoard; Internet of Things; MQTT; load testing; HaLow networks; telemetry.
 \input{chapters/marco}
 \input{chapters/metodologia}
 \input{chapters/resultados}
+\input{chapters/figuras}
 \input{chapters/discusion}
 \input{chapters/conclusiones}
 
