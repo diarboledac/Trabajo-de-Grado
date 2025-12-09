@@ -105,6 +105,28 @@ def _parse_dev_stats(output: str, iface: str) -> Tuple[Optional[int], Optional[i
     return None, None
 
 
+def _parse_survey(output: str) -> Tuple[Optional[int], Optional[int]]:
+    """Extrae tiempos de actividad/ocupacion del canal a partir de `iw dev <iface> survey dump`."""
+    active_ms = busy_ms = None
+    for line in output.splitlines():
+        line = line.strip().lower()
+        if line.startswith("channel active time"):
+            parts = [p for p in line.split() if p.isdigit()]
+            if parts:
+                try:
+                    active_ms = int(parts[0])
+                except ValueError:
+                    pass
+        if line.startswith("channel busy time"):
+            parts = [p for p in line.split() if p.isdigit()]
+            if parts:
+                try:
+                    busy_ms = int(parts[0])
+                except ValueError:
+                    pass
+    return active_ms, busy_ms
+
+
 def _resolve_iface(ssh_client: paramiko.SSHClient) -> str:
     """Elige interfaz: prioridad env, luego halow*, luego primera interfaz encontrada."""
     env_iface = os.getenv("HALOW_INTERFACE", HALOW_IFACE)
@@ -185,6 +207,19 @@ def get_halow_metrics(ssh_client: Optional[paramiko.SSHClient] = None) -> Dict[s
             metrics["halow_drops"] = drops
         except Exception as exc:  # noqa: BLE001
             logging.warning("No se pudo obtener station dump: %s", exc)
+
+        # Opcional: utilizacion de canal (si el driver expone survey)
+        try:
+            survey_out = _run(f"iw dev {iface} survey dump", ssh_client)
+            active_ms, busy_ms = _parse_survey(survey_out)
+            metrics["halow_channel_active_ms"] = active_ms
+            metrics["halow_channel_busy_ms"] = busy_ms
+            if active_ms and busy_ms:
+                metrics["halow_channel_busy_pct"] = busy_ms / active_ms * 100.0
+            else:
+                metrics["halow_channel_busy_pct"] = None
+        except Exception as exc:  # noqa: BLE001
+            logging.warning("No se pudo obtener survey dump: %s", exc)
     finally:
         if close_client and ssh_client is not None:
             try:
@@ -208,6 +243,9 @@ def collect_halow_metrics_loop(session_id: str, interval_sec: float = 2.0, stop_
         "halow_rx_bytes",
         "halow_retries",
         "halow_drops",
+        "halow_channel_active_ms",
+        "halow_channel_busy_ms",
+        "halow_channel_busy_pct",
     ]
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=header)

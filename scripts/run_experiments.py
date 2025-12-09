@@ -296,11 +296,13 @@ def run_prueba_6() -> None:
     run_suite(
         [
             "--duration",
-            "1800",
+            "14400",  # 4 horas para estresar sostenidamente
             "--device-count",
-            "1000",
+            "1000",  # mayor cantidad de dispositivos
             "--interval",
-            "5",
+            "2",  # mas mensajes por dispositivo
+            "--payload-padding",
+            "512",  # payload mas grande para inflar el ancho de bandaa
             "--ramp-percentages",
             "25",
             "50",

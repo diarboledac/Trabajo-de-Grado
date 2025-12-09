@@ -277,5 +277,104 @@
     "csv": null,
     "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p6-20251205-203606-halow.csv",
     "timestamp": "2025-12-05T16:09:11.041192"
+  },
+  {
+    "scenario": "Prueba6",
+    "session": "p6-20251206-025607-n400",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p6-20251206-025607-n400-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p6-20251206-025607-n400-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p6-20251206-025607-n400-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T23:56:51.467283"
+  },
+  {
+    "scenario": "Prueba6",
+    "session": "p6-20251206-025607-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p6-20251206-025607-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p6-20251206-025607-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p6-20251206-025607-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-05T23:56:51.472138"
+  },
+  {
+    "scenario": "Prueba6",
+    "session": "p6-20251206-025408",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p6-20251206-025408-halow.csv",
+    "timestamp": "2025-12-05T23:56:51.473602"
+  },
+  {
+    "scenario": "Prueba1",
+    "session": "p1-20251206-172714-n20",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p1-20251206-172714-n20-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p1-20251206-172714-n20-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p1-20251206-172714-n20-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-06T12:32:48.183976"
+  },
+  {
+    "scenario": "Prueba1",
+    "session": "p1-20251206-172714",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p1-20251206-172714-halow.csv",
+    "timestamp": "2025-12-06T12:32:48.185702"
+  },
+  {
+    "scenario": "Prueba2_n50",
+    "session": "p2-n50-20251206-173505-n50",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n50-20251206-173505-n50-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n50-20251206-173505-n50-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n50-20251206-173505-n50-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-06T12:41:21.263432"
+  },
+  {
+    "scenario": "Prueba2_n50",
+    "session": "p2-n50-20251206-173505",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n50-20251206-173505-halow.csv",
+    "timestamp": "2025-12-06T12:41:21.264993"
+  },
+  {
+    "scenario": "Prueba2_n100",
+    "session": "p2-n100-20251206-174121-n100",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n100-20251206-174121-n100-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n100-20251206-174121-n100-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n100-20251206-174121-n100-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-06T12:47:07.195974"
+  },
+  {
+    "scenario": "Prueba2_n100",
+    "session": "p2-n100-20251206-174121",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n100-20251206-174121-halow.csv",
+    "timestamp": "2025-12-06T12:47:07.197524"
+  },
+  {
+    "scenario": "Prueba2_n200",
+    "session": "p2-n200-20251206-174707-n200",
+    "report_tex": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n200-20251206-174707-n200-report.tex",
+    "report_png": "D:/2025-1/Trabajo-de-Grado/data/metrics/reports/p2-n200-20251206-174707-n200-overview.png",
+    "csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n200-20251206-174707-n200-metrics.csv",
+    "halow_csv": null,
+    "timestamp": "2025-12-06T12:52:38.550816"
+  },
+  {
+    "scenario": "Prueba2_n200",
+    "session": "p2-n200-20251206-174707",
+    "report_tex": null,
+    "report_png": null,
+    "csv": null,
+    "halow_csv": "D:/2025-1/Trabajo-de-Grado/data/metrics/p2-n200-20251206-174707-halow.csv",
+    "timestamp": "2025-12-06T12:52:38.552558"
   }
 ]
